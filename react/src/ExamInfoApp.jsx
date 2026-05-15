@@ -149,8 +149,8 @@ function ExamCard({ examKey, exam, icons, descriptions, onOpen }) {
 
       <div className="exam-card__actions">
         <button className="outline-button" type="button" onClick={() => onOpen(examKey)}>Дэлгэрэнгүй</button>
-        <a className={`solid-button${examKey !== 'IELTS' ? ' is-muted' : ''}`} href={examKey === 'IELTS' ? 'test.html?exam=IELTS&section=listening' : '#scoreComparison'}>
-          {examKey === 'IELTS' ? 'IELTS дасгал' : 'Харьцуулах'}
+        <a className="solid-button" href={examSections[examKey]?.[0]?.href ?? `test.html?exam=${examKey}&section=general`}>
+          {examKey} дасгал
           <SvgIcon path={sectionIcon.arrowUpRight} size={14} />
         </a>
       </div>

@@ -4,7 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Exam Preparation — Дараагийн Алхам</title>
-  <link rel="stylesheet" href="../css/test.css?v=20260511" />
+  <link rel="stylesheet" href="../css/test.css?v=20260512" />
+  <style>
+    .section-tabs{display:flex;gap:8px;flex-wrap:wrap;padding:16px 24px;background:#fff;border-bottom:2px solid #E5E7EB;position:sticky;top:0;z-index:10}
+    .section-tabs a{padding:8px 16px;font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.05em;text-transform:uppercase;text-decoration:none;border:2px solid #0A0E27;color:#0A0E27;transition:background .15s,color .15s}
+    .section-tabs a:hover{background:#0A0E27;color:#CCFF00}
+    .section-tabs a.active{background:#0A0E27;color:#CCFF00}
+    .loading-overlay{display:flex;align-items:center;justify-content:center;min-height:300px;font-family:'Space Grotesk',sans-serif;font-size:1rem;color:#6B7280}
+    .fallback-banner{background:#FEF3C7;border:2px solid #D97706;padding:12px 20px;margin:0 0 24px;font-family:'Space Grotesk',sans-serif;font-size:.875rem;color:#92400E}
+  </style>
 </head>
 <body>
   <main class="prep-page">
@@ -16,11 +24,13 @@
     <section class="prep-hero">
       <div class="prep-hero__icon" id="heroIcon"></div>
       <div class="prep-hero__copy">
-        <h1 id="prepTitle">IELTS Listening Preparation</h1>
-        <p id="prepSubtitle">Master the IELTS Listening section with comprehensive strategies, practice techniques, and expert guidance</p>
+        <h1 id="prepTitle">Exam Preparation</h1>
+        <p id="prepSubtitle">Comprehensive strategies, practice techniques, and expert guidance</p>
         <div class="prep-meta" id="prepMeta"></div>
       </div>
     </section>
+
+    <nav class="section-tabs" id="sectionTabs" aria-label="Exam sections"></nav>
 
     <section class="progress-band">
       <h2>
@@ -93,110 +103,926 @@
       <h2>Ready to Practice?</h2>
       <p>Access mock tests, practice exercises, and personalized study plans</p>
       <div class="cta-actions">
-        <a class="btn-primary" href="#questionTypes">Start Practice Test</a>
-        <a class="btn-secondary" href="#progressGrid">View Study Plan</a>
+        <a class="btn-primary" href="exam-info.html">Explore All Exams</a>
+        <a class="btn-secondary" href="#overviewGrid">View Overview</a>
       </div>
     </section>
   </main>
 
 <script>
+/* ─── Exam catalogue ─────────────────────────────────────────────────── */
 const exams = {
   IELTS: {
     display: 'IELTS',
     icon: 'headphones',
-    score: 'Band 0-9',
+    score: 'Band 0–9',
     target: '7.5',
     sections: ['Listening', 'Reading', 'Writing', 'Speaking'],
-    duration: { Listening: '30 minutes', Reading: '60 minutes', Writing: '60 minutes', Speaking: '11-14 minutes' },
-    questions: { Listening: '40 questions', Reading: '40 questions', Writing: '2 tasks', Speaking: '3 parts' },
+    slugs:    ['listening', 'reading', 'writing', 'speaking'],
+    duration: { listening: '30 min', reading: '60 min', writing: '60 min', speaking: '11–14 min' },
+    questions:{ listening: '40 questions', reading: '40 questions', writing: '2 tasks', speaking: '3 parts' },
   },
   TOEFL: {
-    display: 'TOEFL',
+    display: 'TOEFL iBT',
     icon: 'headphones',
-    score: '0-120',
+    score: '0–120',
     target: '100',
     sections: ['Reading', 'Listening', 'Speaking', 'Writing'],
-    duration: { Reading: '35 minutes', Listening: '36 minutes', Speaking: '16 minutes', Writing: '29 minutes' },
-    questions: { Reading: '20 questions', Listening: '28 questions', Speaking: '4 tasks', Writing: '2 tasks' },
+    slugs:    ['reading', 'listening', 'speaking', 'writing'],
+    duration: { reading: '35 min', listening: '36 min', speaking: '16 min', writing: '29 min' },
+    questions:{ reading: '20 questions', listening: '28 questions', speaking: '4 tasks', writing: '2 tasks' },
   },
   SAT: {
     display: 'SAT',
     icon: 'target',
-    score: '400-1600',
+    score: '400–1600',
     target: '1450',
-    sections: ['Reading & Writing', 'Math', 'Module 1', 'Module 2'],
-    duration: { 'Reading & Writing': '64 minutes', Math: '70 minutes', 'Module 1': '32-35 minutes', 'Module 2': '32-35 minutes' },
-    questions: { 'Reading & Writing': '54 questions', Math: '44 questions', 'Module 1': 'Adaptive set', 'Module 2': 'Adaptive set' },
+    sections: ['Reading & Writing', 'Math'],
+    slugs:    ['reading-writing', 'math'],
+    duration: { 'reading-writing': '64 min', math: '70 min' },
+    questions:{ 'reading-writing': '54 questions', math: '44 questions' },
   },
   HSK: {
     display: 'HSK',
     icon: 'book',
     score: '300 points',
     target: '240',
-    sections: ['HSK 1-2', 'HSK 3-4', 'HSK 5-6'],
-    duration: { 'HSK 1-2': '40-55 minutes', 'HSK 3-4': '85-100 minutes', 'HSK 5-6': '125-140 minutes' },
-    questions: { 'HSK 1-2': 'Foundation set', 'HSK 3-4': 'Intermediate set', 'HSK 5-6': 'Advanced set' },
+    sections: ['HSK 1–2', 'HSK 3–4', 'HSK 5–6'],
+    slugs:    ['hsk-1-2', 'hsk-3-4', 'hsk-5-6'],
+    duration: { 'hsk-1-2': '40–55 min', 'hsk-3-4': '85–100 min', 'hsk-5-6': '125–140 min' },
+    questions:{ 'hsk-1-2': 'Foundation set', 'hsk-3-4': 'Intermediate set', 'hsk-5-6': 'Advanced set' },
   },
   TOPIK: {
     display: 'TOPIK',
     icon: 'book',
-    score: 'TOPIK I/II',
+    score: 'TOPIK I / II',
     target: 'Level 4',
     sections: ['TOPIK I', 'Listening', 'Reading', 'Writing'],
-    duration: { 'TOPIK I': '100 minutes', Listening: '60 minutes', Reading: '70 minutes', Writing: '50 minutes' },
-    questions: { 'TOPIK I': '70 questions', Listening: '50 questions', Reading: '50 questions', Writing: '4 tasks' },
+    slugs:    ['topik-i', 'listening', 'reading', 'writing'],
+    duration: { 'topik-i': '100 min', listening: '60 min', reading: '70 min', writing: '50 min' },
+    questions:{ 'topik-i': '70 questions', listening: '50 questions', reading: '50 questions', writing: '4 tasks' },
+  },
+  GED: {
+    display: 'GED',
+    icon: 'target',
+    score: '100–200 per subject',
+    target: '170',
+    sections: ['Math', 'Science', 'Social Studies', 'Language Arts'],
+    slugs:    ['math', 'science', 'social-studies', 'language-arts'],
+    duration: { math: '115 min', science: '90 min', 'social-studies': '70 min', 'language-arts': '150 min' },
+    questions:{ math: '46 questions', science: '34 questions', 'social-studies': '35 questions', 'language-arts': '2 parts' },
   },
 };
 
+/* ─── Per-exam / per-section content ─────────────────────────────────── */
+const sectionData = {
+
+  /* ══════ IELTS ══════ */
+  'IELTS:listening': {
+    overview: [
+      'Part 1 — Social conversation between two people in an everyday context',
+      'Part 2 — Monologue in a social or semi-formal setting',
+      'Part 3 — Academic discussion among up to four speakers',
+      'Part 4 — Academic monologue or lecture on a study topic',
+    ],
+    questionTypes: [
+      ['Multiple Choice', 'Select the correct answer from A, B, or C options', 'Medium', 'Read questions before the audio plays; predict the answer type; use the option text as a listening guide'],
+      ['Form/Note Completion', 'Fill in missing words in a form, table, or notes', 'Easy', 'Check word limits, write exactly what you hear, watch for plurals and spellings'],
+      ['Matching', 'Match listed items to a set of categories', 'Hard', 'Preview all options first; note keywords; track multiple answers simultaneously'],
+      ['Map / Diagram Labelling', 'Label parts of a map or diagram using words from the recording', 'Medium', 'Study the visual before audio; understand directional vocabulary (north/left/opposite)'],
+      ['Sentence Completion', 'Complete sentences using words from the audio', 'Easy', 'Predict the grammar type; the answer often paraphrases the prompt'],
+    ],
+    strategies: [
+      ['Daily Listening Practice', '30–60 min/day', ['Use authentic English podcasts & news', 'Dictation exercises to train ear-hand speed', 'Review every answer immediately after practice']],
+      ['Predictive Reading', '3–4 times/week', ['Read ahead during prep time to anticipate content', 'Underline keywords in questions', 'Predict word type (noun, number, adjective) before audio starts']],
+      ['Full Mock Tests', 'Weekly', ['Simulate exam conditions — no pausing', 'Transfer answers carefully in the 10-minute transfer window', 'Track weak question types and revise patterns']],
+    ],
+    timeTips: [
+      ['Use Preparation Time', 'During the 30-second break before each part, read the upcoming questions and underline keywords.'],
+      ['Move On Immediately', 'If you miss a question, skip it at once — do not replay in your head or you will miss the next answer.'],
+      ['Transfer Carefully', 'Use the 10-minute transfer time at the end; check spelling, plurals, and word limits (e.g. NO MORE THAN TWO WORDS).'],
+      ['Predict Before Listening', 'Think about what kind of word fits each blank (name, number, date, adjective) before the audio plays.'],
+    ],
+    mistakes: [
+      ['Skipping the preparation time', 'Always read and underline keywords in questions during the prep window.'],
+      ['Exceeding the word limit', 'Stick strictly to "NO MORE THAN TWO WORDS / A NUMBER" — extra words score zero.'],
+      ['Spelling errors', 'Every misspelled answer is marked wrong; practise common exam vocabulary.'],
+      ['Missing plural forms', 'Plural vs. singular matters — listen for the final "s" carefully.'],
+      ['Losing focus mid-section', 'If one answer is missed, immediately move to the next question rather than dwelling on it.'],
+    ],
+    resources: [
+      ['Cambridge IELTS Books 1–18', 'Official Practice Series', 'Essential'],
+      ['British Council IELTS Preparation', 'Official Online Course', 'Premium'],
+      ['IELTS Liz — Listening Tips', 'YouTube Channel', 'Recommended'],
+      ['BBC Learning English', 'Free Website', 'Supplementary'],
+      ['4ielts.com Listening Tests', 'Online Practice', 'Recommended'],
+    ],
+  },
+
+  'IELTS:reading': {
+    overview: [
+      'Passage 1 — Descriptive or factual text on a topic of general interest',
+      'Passage 2 — More discursive text, often related to work or education',
+      'Passage 3 — Complex argumentative text from an academic source',
+      'All passages — 2,000–2,750 words total; 40 questions in 60 minutes',
+    ],
+    questionTypes: [
+      ['True / False / Not Given', 'Decide whether a statement matches, contradicts, or is absent from the passage', 'Hard', 'NOT GIVEN means the text neither confirms nor denies; do not use outside knowledge'],
+      ['Matching Headings', 'Match a heading to each paragraph in the passage', 'Medium', 'Skim each paragraph for the main idea; the heading must cover the whole paragraph, not just one sentence'],
+      ['Sentence Completion', 'Complete sentences using words from the passage (word limit applies)', 'Medium', 'Use the sentence structure to predict what word type is missing; scan around the likely section'],
+      ['Multiple Choice', 'Select one or more correct options based on the passage', 'Medium', 'Eliminate clearly wrong options; answers usually paraphrase, not quote, the passage'],
+      ['Matching Information', 'Identify which paragraph contains given information', 'Hard', 'Note keywords; paragraphs may be re-used; work question by question, not paragraph by paragraph'],
+    ],
+    strategies: [
+      ['Skimming & Scanning', 'Daily', ['Skim the whole passage in 3–4 min for main idea', 'Scan for specific keywords when answering', 'Never read every word for every question']],
+      ['Vocabulary Building', '4–5 times/week', ['Learn academic word list (AWL) roots', 'Study paraphrases — exam answers rephrase the text', 'Read quality newspapers and journals']],
+      ['Timed Practice', 'Weekly', ['Allocate 20 min per passage strictly', 'Practice writing answers without going back', 'Review wrong answers and identify the exact passage sentence']],
+    ],
+    timeTips: [
+      ['20 Minutes Per Passage', 'Divide your 60 minutes equally — do not let one passage steal time from the rest.'],
+      ['Read Questions First', 'Skim the questions before reading the passage so you know what information to look for.'],
+      ['Transfer as You Go', 'Write answers on the answer sheet as you finish each question — there is no extra transfer time in IELTS Reading.'],
+      ['Guess If Needed', 'There is no negative marking — always write an answer, even if you are not sure.'],
+    ],
+    mistakes: [
+      ['Using outside knowledge for T/F/NG', 'Answers must come from the passage only; personal knowledge will mislead you.'],
+      ['Spending too long on one question', 'Allocate roughly 90 seconds per question; flag and move on if stuck.'],
+      ['Copying large chunks of text', 'Word-limit answers must be taken verbatim but kept within the limit.'],
+      ['Confusing FALSE with NOT GIVEN', 'FALSE = the passage directly contradicts the statement; NOT GIVEN = the passage is silent on it.'],
+    ],
+    resources: [
+      ['Cambridge IELTS Books 1–18', 'Official Practice', 'Essential'],
+      ['IELTS Advantage Reading Skills', 'Textbook', 'Recommended'],
+      ['Academic Word List (Coxhead)', 'Free Online', 'Essential'],
+      ['The Guardian / BBC News', 'Daily Reading', 'Supplementary'],
+      ['IELTS Ready Premium (British Council)', 'Online Course', 'Premium'],
+    ],
+  },
+
+  'IELTS:writing': {
+    overview: [
+      'Task 1 — Describe a graph, chart, diagram, or process in at least 150 words',
+      'Task 2 — Write a discursive essay responding to a viewpoint or argument in at least 250 words',
+      'Scoring — Coherence & Cohesion, Lexical Resource, Grammar Accuracy, Task Achievement each 25%',
+      '60 minutes total — recommend spending 20 min on Task 1 and 40 min on Task 2',
+    ],
+    questionTypes: [
+      ['Bar/Line/Pie Chart (T1)', 'Describe and compare data trends over time or between categories', 'Medium', 'Open with an overview of the main trend; group data logically; use precise comparison language'],
+      ['Process Diagram (T1)', 'Describe a sequence of stages or a cycle', 'Medium', 'Use passive voice and sequencing words (first, then, subsequently, finally)'],
+      ['Opinion Essay (T2)', 'Give your own view and support it with reasons and examples', 'Hard', 'State position clearly in the introduction; each body paragraph one main idea with evidence'],
+      ['Discussion Essay (T2)', 'Present both sides of an issue and reach a balanced conclusion', 'Hard', 'Avoid personal bias in presenting opposing views; conclude with your own reasoned stance'],
+      ['Problem-Solution Essay (T2)', 'Identify problems and propose solutions', 'Medium', 'Link each problem to a specific, realistic solution; signal clearly with discourse markers'],
+    ],
+    strategies: [
+      ['Daily Writing Practice', '30–45 min/day', ['Write one Task 1 or Task 2 every day', 'Time yourself strictly', 'Ask a teacher or peer to review for band-scoring criteria']],
+      ['Vocabulary Expansion', '4 times/week', ['Learn academic collocations and discourse markers', 'Avoid repeating the same words — practise synonyms', 'Study high-scoring sample essays for phrase patterns']],
+      ['Structure Drilling', '3 times/week', ['Memorise introduction and conclusion templates', 'Practise topic sentences that preview paragraph content', 'Use cohesion devices (however, furthermore, in contrast) consciously']],
+    ],
+    timeTips: [
+      ['Budget Time Firmly', 'Spend 20 min on Task 1 and 40 min on Task 2 — Task 2 is worth twice as much.'],
+      ['Plan Before Writing', 'Use 3–5 minutes to outline main ideas; writing without a plan leads to repetition.'],
+      ['Leave Time to Proofread', 'Reserve the last 3–5 minutes for grammar and spelling checks.'],
+      ['Word Count Discipline', 'Count approximate words at the halfway point; under 250 words for Task 2 costs marks on Task Achievement.'],
+    ],
+    mistakes: [
+      ['Describing every data point in Task 1', 'Select and group key trends; do not list every single number.'],
+      ['Forgetting an overview in Task 1', 'The overview (main trend summary) is essential for a Band 7+ score.'],
+      ['Going off-topic in Task 2', 'Re-read the prompt after each paragraph to ensure every sentence is relevant.'],
+      ['Simple or repetitive grammar', 'Deliberately use a range of sentence structures: complex, compound, passive, conditionals.'],
+      ['Informal language', 'Avoid contractions (don\'t → do not), slang, and first-person storytelling unless the prompt requires it.'],
+    ],
+    resources: [
+      ['Cambridge IELTS Books 1–18 (Writing Tasks)', 'Official Practice', 'Essential'],
+      ['IELTS Simon Writing Lessons', 'Free Website', 'Essential'],
+      ['E2 IELTS Writing Masterclass', 'YouTube', 'Recommended'],
+      ['Academic Collocations List', 'Free PDF', 'Supplementary'],
+      ['Magoosh IELTS Writing Guide', 'Online', 'Recommended'],
+    ],
+  },
+
+  'IELTS:speaking': {
+    overview: [
+      'Part 1 — Introduction and interview; everyday topics such as home, work, hobbies (4–5 min)',
+      'Part 2 — Individual long turn; describe a topic from a cue card with 1 minute to prepare (3–4 min)',
+      'Part 3 — Two-way discussion; abstract questions related to the Part 2 topic (4–5 min)',
+      'Assessed on Fluency, Vocabulary, Grammar, and Pronunciation — all worth 25%',
+    ],
+    questionTypes: [
+      ['Part 1 Personal Questions', 'Short answers about familiar topics like hobbies, food, hometown', 'Easy', 'Answer directly, then extend with a reason or example; aim for 2–3 sentences per answer'],
+      ['Part 2 Long Turn', 'Speak for 1–2 minutes from a cue card prompt', 'Medium', 'Use your 1-minute preparation to jot 4–5 bullet points; cover all cue card points; do not memorise a script'],
+      ['Part 3 Abstract Discussion', 'Discuss broader societal or conceptual questions related to Part 2', 'Hard', 'Speculate, compare, and give reasoned opinions; use discourse markers to organise your ideas'],
+    ],
+    strategies: [
+      ['Daily Speaking Aloud', '20–30 min/day', ['Record yourself on your phone and listen back', 'Practise answering Part 1 topics from official topic lists', 'Shadow native speakers to improve rhythm and intonation']],
+      ['Vocabulary Range', '4 times/week', ['Learn topic-specific vocabulary for common themes: environment, technology, education', 'Avoid overusing "good", "nice", "very" — replace with precise alternatives', 'Use idioms and collocations naturally, not forced']],
+      ['Mock Interviews', 'Twice a week', ['Practice with a speaking partner or tutor', 'Time each part strictly (1–2 min Part 2)', 'Request feedback on fluency and pronunciation specifically']],
+    ],
+    timeTips: [
+      ['Use Your 1-Minute Prep', 'In Part 2, quickly write 4–5 keywords for each cue card bullet point — do not write full sentences.'],
+      ['Do Not Rush in Part 1', 'Take 1–2 seconds to formulate a full answer; rushing leads to short, incomplete responses.'],
+      ['Extend Naturally', 'If you run out of content in Part 2 before 1 minute, add a memory, a feeling, or why it mattered to you.'],
+      ['Correct Yourself Calmly', 'Self-correction is normal and does not penalise you — say "Actually, I mean…" and continue.'],
+    ],
+    mistakes: [
+      ['One-word or one-sentence answers in Part 1', 'Always extend with a reason or example: "I enjoy cooking because it helps me relax."'],
+      ['Memorising scripted answers', 'Examiners are trained to detect memorised responses; natural speech always scores higher.'],
+      ['Ignoring pronunciation', 'Speak clearly; use stress and intonation to show meaning, especially in Part 3.'],
+      ['Silence or hesitation fillers', 'Replace "um, uh" with "Well, that\'s an interesting question" or a thinking phrase.'],
+    ],
+    resources: [
+      ['IELTS Speaking Part 1/2/3 Topic Lists', 'Free PDF', 'Essential'],
+      ['E2 IELTS Speaking Full Test Videos', 'YouTube', 'Essential'],
+      ['TED Talks (shadowing practice)', 'Free Website', 'Recommended'],
+      ['IELTS Liz Speaking Tips', 'Free Website', 'Recommended'],
+      ['iTalki – Find a Tutor', 'Online Platform', 'Premium'],
+    ],
+  },
+
+  /* ══════ TOEFL ══════ */
+  'TOEFL:reading': {
+    overview: [
+      '2 passages from academic texts on natural sciences, social sciences, or humanities',
+      'Each passage is approximately 700 words; 10 questions per passage',
+      'Question types test comprehension of detail, inference, vocabulary, and rhetorical purpose',
+      '35 minutes total — about 17–18 minutes per passage',
+    ],
+    questionTypes: [
+      ['Factual Information', 'Find explicitly stated facts in the passage', 'Easy', 'Scan for keywords from the question; the answer paraphrases the passage rather than quoting directly'],
+      ['Vocabulary in Context', 'Identify the meaning of a word or phrase as used in the passage', 'Medium', 'Re-read the surrounding sentences; substitute each option back in to check meaning fits'],
+      ['Inference', 'Determine what can be concluded from information in the passage', 'Hard', 'The correct answer is implied, not stated; eliminate options that go beyond the passage evidence'],
+      ['Sentence Simplification', 'Choose the sentence that has the same essential meaning as the highlighted sentence', 'Medium', 'Identify the core subject and predicate; ignore secondary details; the simplest accurate option wins'],
+      ['Prose Summary / Table Completion', 'Identify the major ideas that belong in a summary or a category table', 'Hard', 'Major ideas support the thesis; minor details, examples, or false claims are distractors'],
+    ],
+    strategies: [
+      ['Academic Reading Daily', '30 min/day', ['Read university-level articles in English', 'Annotate main ideas in each paragraph', 'Build academic vocabulary from context, not memorisation']],
+      ['Passage Mapping', '3–4 times/week', ['Briefly note the purpose of each paragraph in the margin', 'Identify thesis and supporting points before answering', 'Return to the correct section for evidence-based questions']],
+      ['Timed Full Sets', 'Weekly', ['Complete both passages in 35 minutes without pausing', 'Target 80% accuracy before the exam', 'Review wrong answers against the exact passage evidence']],
+    ],
+    timeTips: [
+      ['17 Minutes Per Passage', 'Strict pacing prevents running out of time on the more difficult second passage.'],
+      ['Skim Then Answer', 'Read the first sentence of each paragraph to map the text, then go question by question.'],
+      ['Prose Summary Last', 'Save the table/summary question for last — it requires holistic understanding of the passage.'],
+      ['Eliminate, Then Choose', 'Remove clearly wrong options first; the hardest questions often come down to two close options.'],
+    ],
+    mistakes: [
+      ['Reading every word before answering', 'Skim for structure; only re-read closely when a question requires it.'],
+      ['Using background knowledge', 'TOEFL Reading tests comprehension of the passage only; your prior knowledge can mislead you.'],
+      ['Rushing Prose Summary', 'Wrong options often contain accurate statements from the passage but are minor details, not major ideas.'],
+      ['Ignoring vocabulary questions', 'Vocabulary in Context questions are reliable score-boosters if you practise substitution.'],
+    ],
+    resources: [
+      ['Official TOEFL Prep (ETS)', 'Official Website', 'Essential'],
+      ['The Princeton Review TOEFL', 'Textbook', 'Recommended'],
+      ['Magoosh TOEFL Reading Guide', 'Online', 'Recommended'],
+      ['JSTOR / Scientific American', 'Free Reading', 'Supplementary'],
+      ['TOEFL Preparation — ETS Official Guide', 'Official Book', 'Essential'],
+    ],
+  },
+
+  'TOEFL:listening': {
+    overview: [
+      '2 lectures (3–5 min each) from academic contexts covering science, social science, arts, or humanities',
+      '2 conversations (1.5–2 min each) simulating university campus interactions',
+      '5–6 questions per lecture and 5 questions per conversation',
+      '36 minutes total — played once with no rewind',
+    ],
+    questionTypes: [
+      ['Gist-Content', 'Identify the main topic or central idea of the lecture or conversation', 'Easy', 'Predict from the introduction what the lecture is about; verify throughout'],
+      ['Detail Questions', 'Find specific facts, statistics, or details mentioned in the audio', 'Medium', 'Note-taking is essential; listen for signpost phrases like "importantly" or "in other words"'],
+      ['Function / Purpose', 'Determine why the speaker says a particular sentence or phrase', 'Hard', 'Focus on tone, context, and discourse function — not just literal meaning'],
+      ['Organization', 'Identify how information is structured or why the professor chose an approach', 'Hard', 'Listen for transitions; the professor may compare theories, give examples, or contrast ideas'],
+      ['Connecting Content', 'Match facts to categories or complete a table from the lecture', 'Medium', 'Note keywords per category during listening; answers follow the order of the audio'],
+    ],
+    strategies: [
+      ['Active Note-Taking', 'Every practice session', ['Use shorthand and symbols to capture key points', 'Note relationships: cause/effect, compare/contrast, sequence', 'Review notes immediately after to fill gaps from memory']],
+      ['Lecture Immersion', '30 min/day', ['Watch academic lectures on YouTube (TED-Ed, MIT OpenCourseWare)', 'Summarise the main point in 2–3 sentences after each lecture', 'Practise identifying when a professor shifts topics']],
+      ['Full Practice Tests', 'Weekly', ['Use ETS official materials with real audio quality', 'Practice using scratch paper for notes', 'Score immediately and review every wrong answer with the audio transcript']],
+    ],
+    timeTips: [
+      ['Take Notes Immediately', 'Start writing from the very first sentence — the intro always contains the main topic.'],
+      ['Focus on Relationships', 'Note cause-effect, compare-contrast, and sequence — these drive the harder questions.'],
+      ['Do Not Transcribe', 'Write key ideas, not every word; you need to listen and understand, not write everything.'],
+      ['Use Process of Elimination', 'For function and attitude questions, eliminate extreme or unsupported answer choices first.'],
+    ],
+    mistakes: [
+      ['Not taking notes', 'Everything is played once only; notes are your memory backup.'],
+      ['Focusing only on facts', 'Function and attitude questions test your understanding of why, not just what.'],
+      ['Missing transitions', 'Phrases like "however", "on the other hand", "for example" signal new content — note them.'],
+      ['Panicking when vocabulary is unknown', 'Context and overall structure give enough meaning; focus on the big picture.'],
+    ],
+    resources: [
+      ['ETS Official TOEFL Practice Tests', 'Official Platform', 'Essential'],
+      ['Magoosh TOEFL Listening Lessons', 'Online', 'Recommended'],
+      ['MIT OpenCourseWare Lectures', 'Free Video', 'Supplementary'],
+      ['TED-Ed (academic topics)', 'Free Video', 'Supplementary'],
+      ['NoteFull TOEFL Mastery', 'Online Course', 'Recommended'],
+    ],
+  },
+
+  'TOEFL:speaking': {
+    overview: [
+      'Task 1 — Independent: Express and support your own opinion on a familiar topic (45 sec to speak)',
+      'Task 2 — Campus situation: Read a notice + listen to a conversation, then summarise (60 sec)',
+      'Task 3 — Academic course: Read a short text + listen to a lecture, then summarise (60 sec)',
+      'Task 4 — Academic lecture: Listen to a lecture, then explain the concepts discussed (60 sec)',
+    ],
+    questionTypes: [
+      ['Independent Opinion (T1)', 'State a preference or opinion and support it with reasons and examples', 'Medium', 'Use the template: State → Reason 1 + Example → Reason 2 → Brief conclusion; prepare in 15 seconds'],
+      ['Integrated Campus (T2)', 'Summarise the student\'s opinion and the reasons from the conversation', 'Medium', 'Note the main point of the announcement + both reasons the student supports or opposes it'],
+      ['Integrated Academic (T3)', 'Explain the concept from the reading using the lecture examples', 'Hard', 'Identify the definition from the reading; map lecture examples to that definition clearly'],
+      ['Lecture Summary (T4)', 'Explain the key points and examples from the lecture', 'Hard', 'Take notes on 2–3 main points during the lecture; report them clearly in your response'],
+    ],
+    strategies: [
+      ['Template Drilling', '20 min/day', ['Memorise a flexible template for each of the 4 tasks', 'Practice delivering each template aloud within the time limit', 'Record and listen back for filler words and pacing']],
+      ['Note-Taking for Integrated Tasks', '3 times/week', ['Practise summarising a 90-second audio in 5–6 bullet points', 'Focus on the main idea and 2 supporting points', 'Check that your spoken summary uses different words from your notes']],
+      ['Fluency Conditioning', 'Daily', ['Read English text aloud for 10 minutes', 'Practise speaking at a measured pace — not too fast or slow', 'Reduce filler words (um, uh) by pausing briefly instead']],
+    ],
+    timeTips: [
+      ['Use Prep Time Fully', 'For Task 1 you have 15 seconds — decide your opinion and two reasons immediately; do not change mid-speech.'],
+      ['Pace Yourself', '60 seconds is longer than it feels; speak clearly rather than racing to fill every second.'],
+      ['Prioritise Main Points', 'If running out of time, complete the main idea rather than trailing off mid-sentence on a detail.'],
+      ['Notes = Confidence', 'For integrated tasks, having bullet-point notes in front of you prevents hesitation and repetition.'],
+    ],
+    mistakes: [
+      ['Not having a clear structure', 'Examiners score delivery and organisation; rambling without structure costs points.'],
+      ['Memorising a scripted essay', 'Scripts sound unnatural; use flexible templates that you can adapt to any prompt.'],
+      ['Exceeding or significantly underusing the time', 'Fill most of the time — very short responses signal you ran out of ideas.'],
+      ['Ignoring the reading passage in T3', 'The reading provides the concept definition; your lecture examples must tie back to it.'],
+    ],
+    resources: [
+      ['ETS TOEFL Speaking Practice Sets', 'Official Platform', 'Essential'],
+      ['NoteFull Speaking Templates', 'Online Course', 'Recommended'],
+      ['Magoosh TOEFL Speaking Guide', 'Online', 'Recommended'],
+      ['iTalki English Tutors', 'Online Platform', 'Premium'],
+      ['TOEFL Speaking with Mike', 'YouTube', 'Supplementary'],
+    ],
+  },
+
+  'TOEFL:writing': {
+    overview: [
+      'Task 1 (Integrated) — Read a passage, listen to a lecture, then write a 150–225 word summary explaining how the lecture challenges the reading (20 min)',
+      'Task 2 (Academic Discussion) — Read a professor\'s question + two students\' responses, then write your own contribution in at least 100 words (10 min)',
+      'Scored on development, coherence, accuracy, and language use',
+      'Type at keyboard — TOEFL iBT is entirely computer-based',
+    ],
+    questionTypes: [
+      ['Integrated Writing (T1)', 'Summarise how the lecture casts doubt on or refutes the reading passage\'s points', 'Hard', 'Identify 3 key points from the reading; map the lecture\'s counter-argument to each; do not state your own opinion'],
+      ['Academic Discussion (T2)', 'Add a new perspective or extend the discussion, supported by specific reasons and examples', 'Medium', 'Make one clear claim; support it with a concrete example or reasoning; acknowledge or engage with the other students\' ideas'],
+    ],
+    strategies: [
+      ['Integrated Practice', 'Daily', ['Read a short article, then listen to a contrasting lecture on the same topic', 'Write a 200-word summary without looking back at the reading', 'Check that each lecture point is clearly tied to a reading point']],
+      ['Academic Discussion Drills', '3 times/week', ['Practice writing 100+ words in under 8 minutes', 'Vary your sentence structures deliberately', 'Include a specific example or hypothetical scenario to add depth']],
+      ['Keyboard Fluency', 'Daily', ['Type your practice responses (do not handwrite)', 'Learn keyboard shortcuts for editing quickly', 'Monitor typing speed — 40 WPM or faster is comfortable for TOEFL timing']],
+    ],
+    timeTips: [
+      ['Integrated: Outline First', 'Spend 2 minutes noting the 3 reading points and the lecture\'s counter to each before writing.'],
+      ['Discussion: Start Writing Immediately', 'With only 10 minutes, write your opening sentence in the first 30 seconds; plan minimally.'],
+      ['Do Not Repeat the Reading Wholesale', 'Paraphrase both the reading and the lecture points — direct copying does not demonstrate language ability.'],
+      ['Proof-Read Quickly', 'Save 1–2 minutes at the end to fix obvious grammar and spelling errors.'],
+    ],
+    mistakes: [
+      ['Including your opinion in Integrated Writing', 'Task 1 asks you to report the lecture\'s argument, not evaluate it.'],
+      ['Writing less than 150 words in Task 1', 'Below 150 words signals an incomplete response; aim for 180–225.'],
+      ['Repeating others\' ideas in Task 2', 'You must add something new; simply restating what the professor or another student said scores lower.'],
+      ['Inconsistent grammar', 'A variety of sentence structures scores higher than consistently simple sentences.'],
+    ],
+    resources: [
+      ['ETS Official TOEFL Writing Samples', 'Official PDF', 'Essential'],
+      ['Magoosh TOEFL Writing Guide', 'Online', 'Recommended'],
+      ['Grammarly (grammar check)', 'Free Tool', 'Supplementary'],
+      ['Academic Phrasebank (Manchester)', 'Free Website', 'Recommended'],
+      ['NoteFull Integrated Writing Templates', 'Online Course', 'Recommended'],
+    ],
+  },
+
+  /* ══════ SAT ══════ */
+  'SAT:reading-writing': {
+    overview: [
+      'Module 1 — 27 questions covering reading comprehension, vocabulary in context, and writing conventions (32 min)',
+      'Module 2 — 27 questions; difficulty adapts based on Module 1 performance (32 min)',
+      'Passages are short (25–150 words) drawn from literature, history, social science, and science',
+      'Writing questions test grammar, punctuation, transitions, and sentence structure',
+    ],
+    questionTypes: [
+      ['Words in Context', 'Select the word or phrase that best completes a sentence or maintains the passage\'s meaning', 'Medium', 'Consider tone, register, and the surrounding context; eliminate words that change the intended meaning'],
+      ['Text Structure & Purpose', 'Identify the overall function of a text or a specific sentence within it', 'Medium', 'Ask: why did the author write this sentence? (to illustrate, to contrast, to argue, to describe)'],
+      ['Command of Evidence (Textual)', 'Choose the quotation that best supports a given claim or conclusion', 'Hard', 'The evidence must directly prove the statement — good quotes don\'t just relate to the topic'],
+      ['Command of Evidence (Quantitative)', 'Use data from a graph or table to support or undermine a conclusion', 'Hard', 'Read the graph labels carefully; the correct answer accurately represents the data and supports the claim'],
+      ['Grammar & Mechanics', 'Fix errors in sentence boundaries, punctuation, pronoun agreement, and verb tense', 'Medium', 'Read the full sentence aloud in your head; the choice that sounds natural and obeys the rule is correct'],
+    ],
+    strategies: [
+      ['Daily Short Passage Reading', '20–30 min/day', ['Read short literary and science articles', 'Identify the author\'s purpose and tone', 'Practise vocabulary-in-context by removing the target word and predicting it']],
+      ['Grammar Rule Review', '3 times/week', ['Study comma rules, semicolons, colons, and dashes', 'Learn pronoun case (who/whom) and subject-verb agreement', 'Practise fixing errors by identifying the grammatical function of each word']],
+      ['Timed Module Practice', 'Weekly', ['Complete one full 27-question module in 32 minutes', 'Score and categorise errors by question type', 'Target your weakest category in the next practice session']],
+    ],
+    timeTips: [
+      ['71 Seconds Per Question', 'Each module gives roughly 71 seconds per question; move on if you are stuck — return if time allows.'],
+      ['Read the Passage, Then Question', 'For reading questions, read the full short passage first; for grammar, jump straight to the underlined portion.'],
+      ['Transitions Signal Structure', 'When choosing a transition word, identify the logical relationship (contrast, cause, addition, example) between sentences.'],
+      ['Verify Grammar Answers', 'After selecting a grammar fix, re-read the full sentence with your answer inserted to confirm it sounds correct.'],
+    ],
+    mistakes: [
+      ['Choosing answers that sound good but change the meaning', 'Select the option that preserves the original meaning while correcting the error.'],
+      ['Ignoring the passage for vocabulary questions', 'Words in Context requires the passage context — do not select the most common definition out of habit.'],
+      ['Over-thinking evidence questions', 'The correct evidence quote must directly prove the given statement — not just relate to it tangentially.'],
+      ['Rushing through grammar questions', 'Grammar questions are fast points if you know the rules; read carefully to spot the actual error.'],
+    ],
+    resources: [
+      ['Khan Academy Official SAT Practice', 'Free Online', 'Essential'],
+      ['College Board Official SAT Practice Tests', 'Official PDF', 'Essential'],
+      ['PrepScholar SAT Reading Guide', 'Online', 'Recommended'],
+      ['The Princeton Review SAT Prep', 'Textbook', 'Recommended'],
+      ['Erica Meltzer\'s The Critical Reader', 'Textbook', 'Premium'],
+    ],
+  },
+
+  'SAT:math': {
+    overview: [
+      'Module 1 — 22 questions covering algebra, advanced math, problem-solving, and data analysis (35 min)',
+      'Module 2 — 22 questions; adapts based on Module 1 performance (35 min)',
+      '~75% multiple choice, ~25% student-produced responses (grid-in)',
+      'Calculator permitted for the entire Math section on digital SAT',
+    ],
+    questionTypes: [
+      ['Linear Equations & Inequalities', 'Solve for x, interpret solutions in context, or graph linear relationships', 'Easy', 'Identify what the variable represents; translate word problems into equations before solving'],
+      ['Systems of Equations', 'Find the intersection point or number of solutions of two equations', 'Medium', 'Use substitution for simple pairs; use elimination when coefficients align; check for no-solution or infinite-solution cases'],
+      ['Quadratic Equations', 'Factor, use the quadratic formula, or complete the square to find roots', 'Hard', 'Memorise the quadratic formula; recognize vertex form for maximum/minimum questions'],
+      ['Data Analysis & Statistics', 'Interpret graphs, calculate means/medians, and understand probability', 'Medium', 'Read chart titles and axis labels carefully; mean vs. median questions often hinge on outliers'],
+      ['Geometry & Trigonometry', 'Apply area, volume, angle, and trigonometric ratio formulas', 'Hard', 'The formula sheet is provided on the real exam — know when to use sine, cosine, tangent for right triangles'],
+    ],
+    strategies: [
+      ['Concept-by-Concept Review', '30–45 min/day', ['Work through algebra, then advanced math, then geometry in sequence', 'After each concept, solve 10 practice questions immediately', 'Focus extra time on your two weakest topic areas']],
+      ['Error Log', '3 times/week', ['Record every wrong answer with the topic and the exact mistake', 'Re-solve each error-log problem one week later from scratch', 'Identify whether errors are conceptual, careless, or time-related']],
+      ['Full-Length Timed Practice', 'Weekly', ['Complete both math modules back-to-back under real conditions', 'Do not skip grid-in questions — partial credit is not available but a guess costs nothing', 'Review every missed question against the official solution']],
+    ],
+    timeTips: [
+      ['95 Seconds Per Question', 'Budget roughly 95 seconds per question; skip and return if a question is taking too long.'],
+      ['Use Your Calculator Strategically', 'Save the calculator for complex arithmetic; simple algebra is often faster by hand.'],
+      ['Plug In Numbers', 'For abstract algebra questions, substitute a simple number (e.g. x = 2) and test each answer option.'],
+      ['Check Grid-In Format', 'Student-produced responses have specific formatting rules (no mixed numbers, leading decimals); follow them precisely.'],
+    ],
+    mistakes: [
+      ['Misreading the question', 'Underline what is being asked (value of 2x? or x?) before solving.'],
+      ['Skipping steps on hard problems', 'Write out each step; careless arithmetic in multi-step problems is the most common mistake.'],
+      ['Not checking units or context', 'Word problems often require your numerical answer to be interpreted — "the cost is $X, not just X."'],
+      ['Leaving grid-in blank', 'There is no penalty for guessing on the SAT — always enter something.'],
+    ],
+    resources: [
+      ['Khan Academy Official SAT Math', 'Free Online', 'Essential'],
+      ['College Board Official SAT Practice Tests', 'Official PDF', 'Essential'],
+      ['Art of Problem Solving (algebra/geometry)', 'Textbook', 'Premium'],
+      ['PrepScholar SAT Math Guide', 'Online', 'Recommended'],
+      ['Desmos Graphing Calculator (built-in on test)', 'Free Tool', 'Essential'],
+    ],
+  },
+
+  /* ══════ HSK ══════ */
+  'HSK:hsk-1-2': {
+    overview: [
+      'HSK 1 — 150 vocabulary words; covers very basic everyday expressions and sentences',
+      'HSK 2 — 300 vocabulary words; handle simple communication about familiar topics',
+      'Listening — match audio to pictures, true/false, multiple choice (20–25 questions)',
+      'Reading — match words to pictures, sentence completion from a word bank (20–25 questions)',
+    ],
+    questionTypes: [
+      ['Listening — Picture Matching', 'Listen to a word or phrase and select the matching picture', 'Easy', 'Learn the 150/300 core vocabulary with image associations; use flashcards with pictures, not translations'],
+      ['Listening — True or False', 'Listen to a sentence and decide if it matches a given picture or statement', 'Easy', 'Focus on key nouns and verbs; pictures are simple daily-life scenes'],
+      ['Reading — Word-Picture Matching', 'Match written Chinese words to their corresponding pictures', 'Easy', 'Recognise the characters rather than guess from context; vocabulary size is the key skill'],
+      ['Reading — Sentence Completion', 'Select the correct word from a given list to complete a short sentence', 'Medium', 'Look for grammatical clues (是/不是, 有/没有) and the overall sentence meaning'],
+    ],
+    strategies: [
+      ['Vocabulary First', 'Daily', ['Learn 10–15 new characters per day with pictures and audio', 'Use spaced-repetition apps (Anki, Pleco) for HSK 1 & 2 word lists', 'Write each character 5 times while saying it aloud']],
+      ['Listening Immersion', '20 min/day', ['Listen to HSK 1/2 dialogue recordings multiple times', 'Repeat after the speaker to build pronunciation', 'Connect each sound to its written character via pinyin']],
+      ['Reading Practice', '3 times/week', ['Read the 150/300 word list in simple sentences', 'Use beginner Chinese graded readers', 'Match pinyin to characters consistently']],
+    ],
+    timeTips: [
+      ['Pace with Audio', 'Listening questions play once; note the key word or character immediately.'],
+      ['Recognise, Do Not Translate', 'At this level, try to process Chinese directly — avoid mentally translating to English for every item.'],
+      ['Skip and Return', 'If a reading question stumps you, mark it and move on; do not spend more than 30 seconds on a single item.'],
+      ['Use Process of Elimination', 'Even if you are unsure, eliminate options that clearly do not match the image or sentence context.'],
+    ],
+    mistakes: [
+      ['Ignoring tones in listening', 'Chinese tones are meaning-bearing — mā (mother) vs. mǎ (horse). Practise tonal recognition.'],
+      ['Memorising pinyin but not characters', 'HSK Reading tests character recognition; both scripts must be learned together.'],
+      ['Not studying the official word list', 'HSK 1 & 2 are closed-vocabulary tests — the exam only uses words from the official list.'],
+      ['Skipping stroke order', 'Correct stroke order builds character memory and speeds writing; learn it from the start.'],
+    ],
+    resources: [
+      ['HSK Standard Course 1 & 2 (Hanban)', 'Official Textbook', 'Essential'],
+      ['Pleco Dictionary App', 'Free App', 'Essential'],
+      ['Anki with HSK 1–2 Deck', 'Free App', 'Recommended'],
+      ['HSK Academy Online Practice', 'Free Website', 'Recommended'],
+      ['ChinesePod Newbie Episodes', 'Free Podcast', 'Supplementary'],
+    ],
+  },
+
+  'HSK:hsk-3-4': {
+    overview: [
+      'HSK 3 — 600 vocabulary words; communicate in Chinese on a wide range of familiar topics',
+      'HSK 4 — 1,200 vocabulary words; discuss a variety of topics with native speakers fluently',
+      'Format — Listening, Reading, and Writing sections; writing includes sentence reordering and completion',
+      'HSK 4 Writing — write sentences using given words and correct sentence-order jumbles',
+    ],
+    questionTypes: [
+      ['Listening — Short Dialogue', 'Answer questions about brief conversations between two speakers', 'Medium', 'Identify setting, relationship, and main point; note contrast words (但是, 虽然) for harder questions'],
+      ['Reading — True/False/Not Given', 'Decide if a statement matches a reading passage', 'Medium', 'Do not infer beyond what is stated; NOT GIVEN means the passage is silent on the topic'],
+      ['Reading — Multiple Choice', 'Select the correct answer to a question about a passage', 'Medium', 'Locate the key sentence in the text before choosing; paraphrasing is common'],
+      ['Writing — Sentence Reordering', 'Arrange shuffled words or phrases into a grammatically correct sentence', 'Hard', 'Identify the subject, verb, and object first; adverbs and time expressions usually come before the verb'],
+      ['Writing — Sentence Completion', 'Use a given word to write a complete, grammatically correct sentence', 'Medium', 'Check that you have used the target word correctly and the sentence makes real-world sense'],
+    ],
+    strategies: [
+      ['Vocabulary Expansion', 'Daily', ['Use a spaced-repetition deck for HSK 3–4 (1,200 words)', 'Learn words in context sentences, not isolated lists', 'Study antonyms and collocations for each new word']],
+      ['Grammar Patterns', '3 times/week', ['Study 把-sentences, 被-passive, result complements, and aspect markers (了, 着, 过)', 'Practise writing 5 sentences per grammar pattern', 'Recognise these structures in reading passages']],
+      ['Integrated Practice', 'Weekly', ['Complete a full HSK 3 or HSK 4 mock test under timed conditions', 'Review all errors systematically', 'Read simple Chinese news articles to build reading stamina']],
+    ],
+    timeTips: [
+      ['Preview Reading Questions', 'For reading sections, skim the questions before reading the passage to focus your attention.'],
+      ['Subject-Verb-Object First', 'In sentence reordering, place the core SVO frame, then add modifiers — do not guess randomly.'],
+      ['Audio Plays Once', 'Write brief notes in Chinese characters or pinyin as you listen; do not try to write full sentences.'],
+      ['Allocate Writing Time', 'The writing section is often underestimated — budget at least 15 minutes for HSK 4 writing.'],
+    ],
+    mistakes: [
+      ['Confusing similar characters', 'At 600–1,200 words, look-alike characters (己/已/巳, 土/士) become common traps — study them in pairs.'],
+      ['Ignoring measure words', 'Chinese measure words (一本书, 三个人) are tested; errors in them reduce clarity scores.'],
+      ['Memorising example sentences without understanding', 'You need to produce new sentences; rote memory fails on novel sentence reordering.'],
+      ['Not reviewing listening transcripts', 'After every listening practice, read the transcript and identify every word you missed.'],
+    ],
+    resources: [
+      ['HSK Standard Course 3 & 4 (Hanban)', 'Official Textbook', 'Essential'],
+      ['Anki HSK 3–4 Deck', 'Free App', 'Essential'],
+      ['MDBG Chinese-English Dictionary', 'Free Online', 'Recommended'],
+      ['HSK Online Mock Tests (hsk.academy)', 'Free Website', 'Recommended'],
+      ['Mandarin Corner YouTube (intermediate)', 'YouTube', 'Supplementary'],
+    ],
+  },
+
+  'HSK:hsk-5-6': {
+    overview: [
+      'HSK 5 — 2,500 vocabulary words; read Chinese newspapers and watch films with only minor difficulty',
+      'HSK 6 — 5,000 vocabulary words; easily comprehend any written or spoken Chinese',
+      'HSK 6 Listening — 50 questions; complex dialogues and lectures; 50-minute audio',
+      'HSK 6 Writing — condense a 1,000-word passage into an ~400-word summary from memory',
+    ],
+    questionTypes: [
+      ['Listening — Interview & Lecture', 'Answer comprehension questions about formal interviews and academic content', 'Hard', 'Note the speaker\'s attitude, purpose, and supporting evidence; key information often comes in the middle of a segment'],
+      ['Reading — Fill in the Blank', 'Select the best word from options to complete a formal paragraph', 'Hard', 'Analyse grammatical role AND semantic fit; pay attention to register and collocations'],
+      ['Reading — Sentence Insertion', 'Choose where a given sentence best fits into a passage', 'Hard', 'Identify discourse connectors in the sentence; it must logically follow the preceding and lead into the following sentence'],
+      ['Writing — Passage Summary', 'Read an ~1,000-word article, set it aside, and write a ~400-word summary in your own words', 'Hard', 'During reading, note 3–4 main points with key vocabulary; the summary must preserve the original structure and tone'],
+    ],
+    strategies: [
+      ['Extensive Reading', 'Daily', ['Read Chinese news: 人民日报, 知乎, financial media', 'Annotate unfamiliar words and look up collocations', 'Aim to read 1,000 Chinese characters per day at natural speed']],
+      ['Listening to Native Media', '30–60 min/day', ['Watch Chinese TV news, documentaries, and talk shows', 'Summarise each segment in written Chinese', 'Focus on detecting speaker attitudes and discourse structure']],
+      ['Summary Writing Practice', '3 times/week', ['Read an article, close it, then write a summary from memory', 'Check your summary against the original for accuracy', 'Practise reducing 800 words to 400 while preserving all main points']],
+    ],
+    timeTips: [
+      ['Reading: Time per Section', 'HSK 6 Reading is 50 questions in 50 minutes — one question per minute; do not let fill-in-blank questions steal time.'],
+      ['Writing: Notes During Reading', 'You may take notes while reading the source article; use these to structure your summary (not copy).'],
+      ['Listen for Macro Structure', 'In long listening segments, note when the topic shifts; transitions signal new important content.'],
+      ['Summary: Start with Main Idea', 'Open your HSK 6 summary with the article\'s central argument, then cover supporting points in order.'],
+    ],
+    mistakes: [
+      ['Copying phrases from the reading into the summary', 'The summary must use your own language — direct copying is penalised.'],
+      ['Neglecting formal register', 'HSK 5–6 texts are formal; use 成语 and formal vocabulary appropriately, not colloquial expressions.'],
+      ['Weak note-taking during the reading phase', 'With only 10–15 minutes to read the source, efficient notes are critical for the summary.'],
+      ['Underestimating listening complexity', 'HSK 5–6 audio includes interviews and lectures with deliberate speed and complex vocabulary.'],
+    ],
+    resources: [
+      ['HSK Standard Course 5 & 6 (Hanban)', 'Official Textbook', 'Essential'],
+      ['People\'s Daily Online (人民日报)', 'Free News', 'Essential'],
+      ['Anki HSK 5–6 Deck', 'Free App', 'Recommended'],
+      ['HSK6 Mock Tests (hsk.academy)', 'Free Website', 'Recommended'],
+      ['ChinesePod Advanced Episodes', 'Online Platform', 'Supplementary'],
+    ],
+  },
+
+  /* ══════ TOPIK ══════ */
+  'TOPIK:topik-i': {
+    overview: [
+      'TOPIK I covers Levels 1 (beginner) and Level 2 (elementary)',
+      'Listening — 30 questions; everyday conversations and simple announcements (40 min)',
+      'Reading — 40 questions; short texts, notices, and simple passages (60 min)',
+      'No Writing section in TOPIK I; Level 2 threshold is 140/200 points',
+    ],
+    questionTypes: [
+      ['Listening — Matching Picture', 'Select the picture that matches the short dialogue or announcement', 'Easy', 'Focus on keywords and nouns; pictures show everyday objects and locations'],
+      ['Listening — True or False', 'Decide if a statement about the dialogue is correct', 'Easy', 'Listen for factual details (who, what, where); pay attention to negatives'],
+      ['Reading — Short Text Comprehension', 'Answer questions about short notices, advertisements, and signs', 'Medium', 'Read the heading and bold text first; short texts are direct and factual'],
+      ['Reading — Fill in the Blank', 'Choose the correct particle, verb ending, or vocabulary word', 'Medium', 'Identify the grammatical context: subject/object markers, tense, and formality level'],
+    ],
+    strategies: [
+      ['Core Vocabulary', 'Daily', ['Learn 800–1,000 essential Korean words using Anki or flashcards', 'Study vocabulary thematically (food, transport, health, weather)', 'Always learn words with their pronunciation and example sentences']],
+      ['Grammar Foundations', '4 times/week', ['Study subject/object markers (이/가, 을/를), topic marker (은/는)', 'Learn basic tenses: present (아/어요), past (았/었어요), future (을 거예요)', 'Practise 3–5 grammar patterns per week with written sentences']],
+      ['Listening Practice', '20 min/day', ['Listen to TOPIK I sample dialogues repeatedly', 'Use Korean media at slow speed: Talk To Me In Korean, Pimsleur', 'Repeat after speakers to internalise pronunciation patterns']],
+    ],
+    timeTips: [
+      ['Listening: Preview Questions', 'Scan the listening questions during the intro announcement; know what to listen for.'],
+      ['Reading: Short Texts First', 'Complete the shorter, simpler reading items first to build confidence and conserve time.'],
+      ['Particle Focus', 'Grammar questions hinge on particles; learn them thoroughly — they are the highest-frequency test item.'],
+      ['Guess Systematically', 'If unsure, eliminate options with grammar structures you do not recognise; pick the most familiar structure.'],
+    ],
+    mistakes: [
+      ['Ignoring particles', 'Korean particles determine grammar meaning completely; confusing 이/가 vs. 은/는 is a major error source.'],
+      ['Over-translating to English', 'At TOPIK I level, Korean structures do not map directly; think in Korean patterns.'],
+      ['Not learning Hangul fluently', 'Reading speed is critical; slow Hangul reading costs time on the reading section.'],
+      ['Underestimating listening speed', 'TOPIK I dialogues are clear but real-speed Korean — build listening stamina daily.'],
+    ],
+    resources: [
+      ['Talk To Me In Korean Levels 1–2', 'Free Podcast/Textbook', 'Essential'],
+      ['Official TOPIK Practice Tests (NIIED)', 'Official PDF', 'Essential'],
+      ['Anki Korean Vocabulary Deck', 'Free App', 'Recommended'],
+      ['TTMIK Grammar in Korean', 'Free Website', 'Recommended'],
+      ['Sogang Korean 1A/1B', 'Textbook', 'Supplementary'],
+    ],
+  },
+
+  'TOPIK:listening': {
+    overview: [
+      'TOPIK II Listening — 50 questions over 60 minutes; dialogues, lectures, and news broadcasts',
+      'Level 3–4 items (questions 1–30): medium-length conversations and announcements',
+      'Level 5–6 items (questions 31–50): complex interviews, academic discussions, and radio programmes',
+      'Played once with no rewind; questions appear with four multiple-choice options',
+    ],
+    questionTypes: [
+      ['Purpose / Main Idea', 'Identify why the speaker made a statement or what the conversation is about', 'Medium', 'Predict purpose from tone and context; the first and last sentences usually carry the main idea'],
+      ['Selecting the Next Action', 'Choose what the speaker will most likely do next', 'Medium', 'Listen for future tense expressions and intentions; the answer is implied by the dialogue conclusion'],
+      ['News / Announcement Comprehension', 'Answer questions about broadcast content', 'Hard', 'Focus on who, what, when, where; announcements follow a predictable formula'],
+      ['Academic Lecture', 'Answer questions about a scholarly talk (Levels 5–6)', 'Hard', 'Note the main argument, examples, and conclusion; ignore unfamiliar vocabulary if the main point is clear'],
+    ],
+    strategies: [
+      ['Native Media Immersion', 'Daily', ['Watch Korean dramas, news, and variety shows without subtitles', 'Practise shadowing — repeat after speakers at natural speed', 'Target academic and formal speech, not only casual conversation']],
+      ['TOPIK Mock Listening', '3 times/week', ['Complete full 50-question listening sections under time pressure', 'After each test, listen again while reading the transcript', 'Categorise errors: vocabulary, speed, or question misreading']],
+      ['Vocabulary for Listening', 'Daily', ['Study formal Korean vocabulary: 논문, 발표, 주제, 분석', 'Learn discourse markers: 따라서, 즉, 반면에, 결론적으로', 'Listen for these markers to track content organisation']],
+    ],
+    timeTips: [
+      ['Scan Ahead', 'Read the answer options during the brief pause before each question plays to know what to listen for.'],
+      ['Do Not Fixate on Missed Words', 'If one word is unclear, use context to fill the gap; fixating causes you to miss the next sentence.'],
+      ['Attitude and Tone', 'Higher-level questions ask about the speaker\'s attitude; listen for intonation and hedging language.'],
+      ['Four Options — Eliminate Two', 'Usually two options are clearly wrong; narrow to two, then listen for the distinguishing detail.'],
+    ],
+    mistakes: [
+      ['Only practising easy-level content', 'Level 5–6 questions require exposure to academic and formal Korean; include these in practice.'],
+      ['Not reviewing transcripts', 'After every listening set, read the script and find every phrase you misheard.'],
+      ['Ignoring Korean discourse markers', '따라서 (therefore), 반면에 (on the other hand) signal argument structure — missing them causes wrong answers.'],
+      ['Underestimating pronunciation variation', 'Korean undergoes sound change rules (연음, 경음화); practise these patterns so they do not confuse your ear.'],
+    ],
+    resources: [
+      ['Official TOPIK II Listening Tests (NIIED)', 'Official PDF + Audio', 'Essential'],
+      ['KBS World Radio Korean', 'Free Broadcast', 'Recommended'],
+      ['Talk To Me In Korean Levels 3–6', 'Textbook', 'Recommended'],
+      ['Yonsei Korean Listening Course', 'Online', 'Premium'],
+      ['Naver Dictionary App', 'Free App', 'Supplementary'],
+    ],
+  },
+
+  'TOPIK:reading': {
+    overview: [
+      'TOPIK II Reading — 50 questions in 70 minutes; includes fill-in-blank, topic selection, and long-passage comprehension',
+      'Levels 3–4 (questions 1–30): advertisements, short articles, and simple informational texts',
+      'Levels 5–6 (questions 31–50): editorial, academic, and social commentary passages',
+      'Questions test vocabulary, grammar, inference, and understanding of the author\'s perspective',
+    ],
+    questionTypes: [
+      ['Fill in the Blank (Grammar)', 'Select the correct grammatical form to complete a sentence', 'Medium', 'Identify the sentence function (condition, reason, contrast) and match the appropriate connective ending'],
+      ['Topic / Main Idea Selection', 'Choose the main idea or title that best represents a passage', 'Medium', 'Read the entire passage; the main idea encompasses all paragraphs, not just one point'],
+      ['Correct Sentence Insertion', 'Find where a given sentence best fits into a passage', 'Hard', 'Look for discourse connectors and pronoun references that link the inserted sentence to surrounding text'],
+      ['Long Passage Comprehension', 'Answer multiple questions about an argumentative or informational article', 'Hard', 'Identify the author\'s stance and supporting evidence; do not import assumptions from outside the text'],
+    ],
+    strategies: [
+      ['Reading Stamina', 'Daily', ['Read Korean articles on topics: science, culture, social issues', 'Aim to read 500+ characters without stopping or looking up words', 'Identify topic sentences and supporting evidence as you read']],
+      ['Grammar Patterns for Level 5–6', '3 times/week', ['Study complex endings: -더라도, -는 한, -을 뿐만 아니라, -에도 불구하고', 'Practise choosing between similar endings by identifying the logical relationship', 'Read model sentences and paraphrase them in simpler Korean']],
+      ['Mock Reading Sections', 'Weekly', ['Complete a full 50-question reading section in 70 minutes', 'Note which question types cause the most errors', 'For long passages, practise reading the questions first, then the passage']],
+    ],
+    timeTips: [
+      ['Short Items First', 'Dispatch the fill-in-blank and short-text items quickly to save time for long passages.'],
+      ['Paragraph Main Idea', 'For topic selection, read the first sentence of each paragraph; the topic must cover all of them.'],
+      ['Author\'s Stance', 'Level 5–6 questions often test the author\'s attitude — look for evaluative adjectives and hedging phrases.'],
+      ['Sentence Insertion Logic', 'The inserted sentence must make logical and grammatical sense with the sentence before AND after it.'],
+    ],
+    mistakes: [
+      ['Spending too long on fill-in-blank', 'These should be quick; if you cannot decide in 60 seconds, move on and return.'],
+      ['Ignoring connective endings in fill-in-blank', 'The connective is the answer — identify the logical relationship (contrast, reason, condition) first.'],
+      ['Making inferences not supported by the text', 'TOPIK Reading is evidence-based; do not assume what the author "must think."'],
+      ['Misidentifying main idea', 'The correct topic option covers the whole passage; one that only matches one paragraph is a distractor.'],
+    ],
+    resources: [
+      ['Official TOPIK II Reading Tests (NIIED)', 'Official PDF', 'Essential'],
+      ['이유진 한국어 TOPIK Reading', 'Textbook', 'Recommended'],
+      ['Naver News (나는 기사)', 'Free Reading', 'Supplementary'],
+      ['Korean Grammar in Use — Advanced', 'Textbook', 'Recommended'],
+      ['TOPIK Guide Website', 'Free Online', 'Recommended'],
+    ],
+  },
+
+  'TOPIK:writing': {
+    overview: [
+      'TOPIK II Writing — 4 questions in 50 minutes; tests grammar, vocabulary, and composition',
+      'Questions 51–52 — Fill in the blank in a short passage (each ~10 min)',
+      'Question 53 — Write an informational paragraph using a graph or data prompt (~200 words, 10 min)',
+      'Question 54 — Write a full argumentative essay on a given topic (~600 words, 30 min)',
+    ],
+    questionTypes: [
+      ['Fill in the Blank (51–52)', 'Complete gaps in a short functional text (advertisement, invitation, report) with the most appropriate phrase', 'Medium', 'Use grammatical context and the surrounding text to determine what type of content fits; match formality level'],
+      ['Data Description (53)', 'Describe a graph, chart, or table accurately in paragraph form', 'Hard', 'Open with the overall trend; describe key data points; use hedging language for estimates'],
+      ['Argumentative Essay (54)', 'Write a structured essay arguing a position on a social issue in ~600 words', 'Hard', 'Plan before writing: intro (position), body 1 (argument + evidence), body 2 (counter + rebuttal), conclusion'],
+    ],
+    strategies: [
+      ['Essay Structure Mastery', 'Daily', ['Memorise a 4-paragraph essay template in Korean', 'Practise writing the intro and conclusion in under 5 minutes each', 'Review Level 5–6 sample essays and annotate their structure']],
+      ['Data Writing Practice', '3 times/week', ['Practice describing Korean graphs and charts with accurate language', 'Learn data vocabulary: 증가, 감소, 비율, 차지하다, 반면에', 'Aim for 180–220 words per practice attempt']],
+      ['Vocabulary and Grammar Range', '4 times/week', ['Use advanced connectives and formal endings in every practice sentence', 'Avoid repeating the same vocabulary — learn 3 synonyms for common concepts', 'Proofread for particle and tense errors after every practice']],
+    ],
+    timeTips: [
+      ['30 Minutes for Q54', 'Allocate the most time to Q54 — it is worth the most marks (100 points of 300 total for writing).'],
+      ['5-Minute Outline for Essay', 'Write a brief bullet-point plan before starting Q54; disorganised essays score poorly.'],
+      ['Match Formality', 'TOPIK Writing requires formal Korean (합니다 / -ㅂ니다 register); avoid casual speech forms.'],
+      ['Proofread Once', 'Leave 2–3 minutes after completing Q54 to check particles, verb endings, and spacing.'],
+    ],
+    mistakes: [
+      ['Using informal endings in the essay', 'Q54 requires formal register throughout; 해요 form is acceptable at lower levels but -ㅂ니다 scores higher.'],
+      ['Not writing enough for Q54', 'Below 400 words is penalised; below 300 words is a significant deduction — aim for 550–650.'],
+      ['Ignoring Q53 data accuracy', 'Describe the data as shown; inventing statistics or misrepresenting trends costs task-completion marks.'],
+      ['Repeating the prompt wording', 'Paraphrase the topic in your own words throughout — direct repetition shows limited vocabulary.'],
+    ],
+    resources: [
+      ['Official TOPIK II Writing Samples (NIIED)', 'Official PDF', 'Essential'],
+      ['이유진 TOPIK 쓰기', 'Textbook', 'Recommended'],
+      ['Korean Grammar in Use — Intermediate/Advanced', 'Textbook', 'Recommended'],
+      ['TOPIK Guide — Writing Tips', 'Free Website', 'Recommended'],
+      ['Naver Blog Corpus (formal writing examples)', 'Free Online', 'Supplementary'],
+    ],
+  },
+
+  /* ══════ GED ══════ */
+  'GED:math': {
+    overview: [
+      'Part 1 — 5 questions, no calculator allowed; tests numerical and algebraic reasoning',
+      'Part 2 — 41 questions, calculator allowed; covers algebra, geometry, statistics, and data',
+      'Question types: multiple choice, fill-in-the-blank, drag-and-drop, and hot-spot',
+      '115 minutes total; passing score 145, college-ready score 165+',
+    ],
+    questionTypes: [
+      ['Algebraic Reasoning', 'Solve equations, inequalities, and systems; interpret expressions in context', 'Medium', 'Translate word problems into equations; check your answer by substituting back into the original'],
+      ['Quantitative Reasoning', 'Work with ratios, proportions, percentages, and rates in real-world contexts', 'Easy', 'Set up proportions carefully; label units to avoid mixing hours/minutes or dollars/cents'],
+      ['Geometry', 'Calculate area, perimeter, volume, and angle measures; interpret coordinate graphs', 'Medium', 'Memorise formulas for circles, triangles, rectangles, and 3D solids; they are provided on the exam but recognising when to use them is key'],
+      ['Data Analysis & Statistics', 'Interpret tables, graphs, and statistical summaries; calculate mean, median, and probability', 'Easy', 'Read graph axes and titles carefully; median is the middle value when data is ordered'],
+    ],
+    strategies: [
+      ['Concept-First Review', '45 min/day', ['Use Khan Academy GED Math or GED.com prep', 'Cover one topic per session: algebra, then geometry, then statistics', 'After each topic, complete 10 practice problems before moving on']],
+      ['Calculator Proficiency', '3 times/week', ['Practise with the TI-30XS calculator (the official GED calculator)', 'Learn how to enter fractions, find square roots, and compute percentages', 'Do not rely on the calculator for simple arithmetic — save it for complex steps']],
+      ['Mock Test Under Conditions', 'Weekly', ['Take a full 115-minute GED Math practice test', 'Score and categorise errors by topic', 'Re-study any topic where you score below 70%']],
+    ],
+    timeTips: [
+      ['No Calculator Part First', 'Complete the 5 no-calculator questions efficiently; they are typically numerical and algebraic, not complex.'],
+      ['Skip and Flag', 'If a problem requires long calculation or unfamiliar setup, flag it and return after completing easier items.'],
+      ['Estimate for Sanity Checks', 'After solving, quickly estimate whether your answer is a reasonable size (e.g. an area of -5 is impossible).'],
+      ['Read Every Word', 'Word problems contain every number and condition you need — and sometimes deliberate distractors; underline the question.'],
+    ],
+    mistakes: [
+      ['Forgetting to convert units', 'Check whether the question asks for feet vs. inches, hours vs. minutes before calculating.'],
+      ['Misidentifying the question being asked', 'Re-read the final question; many students solve for x when the question asks for 2x.'],
+      ['Skipping formula review', 'GED provides a formula sheet but recognising when each formula applies is the real skill.'],
+      ['Not practising Part 1 (no calculator)', 'Mental math and number sense are tested without the calculator — do not neglect this section.'],
+    ],
+    resources: [
+      ['Khan Academy GED Math', 'Free Online', 'Essential'],
+      ['GED.com Official Study Guide', 'Official Website', 'Essential'],
+      ['Kaplan GED Test Prep', 'Textbook', 'Recommended'],
+      ['GED Ready Practice Test (official)', 'Official Platform', 'Essential'],
+      ['TI-30XS Multiview Calculator Guide', 'Free PDF', 'Recommended'],
+    ],
+  },
+
+  'GED:science': {
+    overview: [
+      'Life Science — ~40% of questions; cells, genetics, evolution, ecosystems',
+      'Physical Science — ~40% of questions; atoms, chemical reactions, forces, energy',
+      'Earth and Space Science — ~20% of questions; geological processes, weather, solar system',
+      '90 minutes; passing score 145; questions include data analysis, diagrams, and scenarios',
+    ],
+    questionTypes: [
+      ['Science Practices — Reading Graphs', 'Interpret data from charts, graphs, and experimental results', 'Medium', 'Read titles, axes, and legends first; answer questions from the data — do not use outside knowledge beyond basic science'],
+      ['Science Practices — Short Answer', 'Explain an experimental design, identify variables, or summarise conclusions', 'Hard', 'Name the independent and dependent variables explicitly; describe controls; use scientific vocabulary'],
+      ['Content Knowledge — Life Science', 'Answer questions about biological concepts from a stimulus (article or diagram)', 'Medium', 'Use context clues in the passage; genetics and evolution questions often test logical reasoning, not memorisation'],
+      ['Content Knowledge — Physical Science', 'Answer questions about chemistry and physics concepts', 'Medium', 'Learn the most testable concepts: atomic structure, chemical equations (reactants/products), Newton\'s laws, energy forms'],
+    ],
+    strategies: [
+      ['Stimulus-Based Practice', 'Daily', ['Practise reading a short science passage and answering questions without prior knowledge', 'GED Science is reading-comprehension-heavy; strong readers score well even without deep science background', 'Identify the main conclusion and evidence in each stimulus']],
+      ['Key Concepts Review', '3 times/week', ['Study the most tested topics: cell division, Punnett squares, photosynthesis/respiration, Newton\'s laws', 'Use visual aids: diagrams of the cell, periodic table, food web', 'Write brief summaries of each concept in your own words']],
+      ['Data Interpretation Drills', '3 times/week', ['Practice reading bar charts, line graphs, scatter plots, and data tables', 'Identify trends, anomalies, and what the data supports or contradicts', 'Practise writing one-sentence conclusions from data']],
+    ],
+    timeTips: [
+      ['Stimulus First', 'Read the attached passage or diagram before reading the question; context helps you locate answers faster.'],
+      ['85 Seconds Per Question', 'With 34 questions in 90 minutes, budget ~85 seconds each; long scenarios eat time quickly.'],
+      ['Short Answer Planning', 'Short-answer items: spend 1 minute outlining before writing; clear structure scores full marks.'],
+      ['Do Not Memorise Everything', 'GED Science is passage-based — almost all answers are in or directly inferable from the stimulus material.'],
+    ],
+    mistakes: [
+      ['Using personal science knowledge instead of the stimulus', 'Answers must come from the given text or diagram; outside knowledge can contradict the passage.'],
+      ['Leaving short-answer blank', 'Partial credit is possible; even an incomplete answer with correct elements scores better than nothing.'],
+      ['Confusing correlation with causation', 'GED Data questions frequently test whether students understand that a trend in a graph does not prove cause.'],
+      ['Skipping diagrams', 'Diagrams are often the key to answering the associated question correctly.'],
+    ],
+    resources: [
+      ['Khan Academy GED Science', 'Free Online', 'Essential'],
+      ['GED.com Official Science Study Guide', 'Official Website', 'Essential'],
+      ['CK-12 Life Science / Physical Science', 'Free Textbook', 'Recommended'],
+      ['GED Ready Science Practice Test', 'Official Platform', 'Essential'],
+      ['Kaplan GED Test Prep — Science', 'Textbook', 'Recommended'],
+    ],
+  },
+
+  'GED:social-studies': {
+    overview: [
+      'Civics & Government — ~50% of questions; US Constitution, government structures, civic rights',
+      'US History — ~20% of questions; colonial era through modern events',
+      'Economics — ~15% of questions; supply/demand, government fiscal and monetary policy',
+      'Geography & World History — ~15% of questions; human-environment interaction, global events',
+    ],
+    questionTypes: [
+      ['Reading Primary Sources', 'Interpret excerpts from historical documents (Constitution, speeches, legislation)', 'Hard', 'Identify the author\'s purpose and historical context; answer only from the document, not general knowledge'],
+      ['Map and Chart Interpretation', 'Use geographic or statistical data to answer questions about social and economic patterns', 'Medium', 'Read the map key/legend and chart labels carefully; the question is usually answerable from the visual alone'],
+      ['Extended Response (if applicable)', 'Write a short evidence-based argument responding to two contrasting source documents', 'Hard', 'State a clear claim in the first sentence; use evidence from both documents; structure as claim-evidence-reasoning'],
+      ['Cause and Effect / Sequencing', 'Identify what caused a historical event or what followed as a consequence', 'Medium', 'Chronological vocabulary clues: "as a result", "led to", "following"; do not assume modern knowledge applies to historic contexts'],
+    ],
+    strategies: [
+      ['Document Practice', '3 times/week', ['Read excerpts from the Declaration of Independence, US Constitution, Federalist Papers', 'Practise summarising each document\'s main argument in 1–2 sentences', 'Answer 5 questions per document from official practice materials']],
+      ['Current Events Awareness', 'Weekly', ['Read articles about US government and economics to recognise concepts in context', 'Link economics concepts to real events: inflation, unemployment, federal budget', 'Watch documentary short-films on major US historical events']],
+      ['Mock Full Tests', 'Weekly', ['Complete a 70-minute Social Studies practice section', 'Focus on question types where you score below 70%', 'For extended response: practise writing a full response in 25 minutes']],
+    ],
+    timeTips: [
+      ['Read Source Documents Thoroughly', 'Primary source questions are only answerable from the document; spend 2–3 minutes reading it carefully.'],
+      ['Data Questions Are Quick', 'Map and chart questions should take under 60 seconds if you read the legend first.'],
+      ['Extended Response: Outline First', 'A 3-minute outline saves time and improves organisation for evidence-based writing.'],
+      ['History Sequence', 'For cause-effect questions, ask: what happened BEFORE (cause) and what happened AFTER (effect)?'],
+    ],
+    mistakes: [
+      ['Answering primary source questions from general knowledge', 'Stick to what the document says; outside historical knowledge may be inaccurate or irrelevant.'],
+      ['Ignoring the extended response', 'It is worth a significant portion of the score; a well-structured 3-paragraph response scores well even if not perfect.'],
+      ['Misreading map legends', 'Map questions are simple once you read the key — rushing past the legend is the most common error.'],
+      ['Treating all historical events as equally important', 'Focus study time on the most-tested periods: Constitutional founding, Civil War/Reconstruction, 20th-century civil rights.'],
+    ],
+    resources: [
+      ['Khan Academy GED Social Studies', 'Free Online', 'Essential'],
+      ['GED.com Official Social Studies Guide', 'Official Website', 'Essential'],
+      ['Crash Course US History (YouTube)', 'Free Video', 'Recommended'],
+      ['GED Ready Social Studies Practice Test', 'Official Platform', 'Essential'],
+      ['Kaplan GED Test Prep — Social Studies', 'Textbook', 'Recommended'],
+    ],
+  },
+
+  'GED:language-arts': {
+    overview: [
+      'Part 1 — Extended Response (45 min): write a 4–7 paragraph essay arguing a position based on two provided texts',
+      'Part 2 — Short break (no extra time provided between parts)',
+      'Part 3 — Reading Comprehension and Language (75 min): 40+ questions on reading, vocabulary, grammar, and editing',
+      'Reading texts include literary fiction, drama, nonfiction, and career/workplace documents',
+    ],
+    questionTypes: [
+      ['Extended Response', 'Write an evidence-based argument that analyses two source texts on a debatable issue', 'Hard', 'Clearly state your position in the introduction; use evidence from both texts; acknowledge and refute the opposing view'],
+      ['Reading Comprehension — Literary', 'Answer questions about plot, character, theme, and figurative language in fiction or drama', 'Medium', 'Identify the narrative voice and theme from recurring ideas; figurative language questions require you to interpret, not translate literally'],
+      ['Reading Comprehension — Informational', 'Answer questions about an author\'s argument, evidence, and structure in nonfiction', 'Medium', 'Ask: what is the author\'s claim? What evidence supports it? How is the text organised (compare/contrast, problem/solution)?'],
+      ['Editing / Language', 'Correct errors in grammar, punctuation, sentence structure, and usage', 'Medium', 'Read the full sentence before choosing; the correct option must be both grammatically correct and contextually natural'],
+    ],
+    strategies: [
+      ['Essay Writing Practice', 'Daily', ['Write one practice Extended Response in 45 minutes on a given prompt', 'Use a 3-part structure: intro (claim), 2 body paragraphs (evidence from each text), conclusion', 'Proofread specifically for punctuation, subject-verb agreement, and run-on sentences']],
+      ['Reading Variety', '3 times/week', ['Read literary fiction, biographical essays, and editorial opinion pieces', 'After reading, write 2–3 sentences summarising the author\'s purpose and main argument', 'Note vocabulary in context and look up unfamiliar words']],
+      ['Grammar Review', '3 times/week', ['Focus on the most-tested rules: comma usage, semicolons, run-ons, dangling modifiers, pronoun agreement', 'Practise editing paragraphs for errors', 'Read your edited sentence aloud — correct grammar sounds natural']],
+    ],
+    timeTips: [
+      ['45 Minutes for Essay', 'Invest the full Part 1 time in the extended response — planning 5 min, writing 35 min, reviewing 5 min.'],
+      ['Reading: Question-Guided', 'For Part 3 reading, scan the questions before reading the passage to know what information to locate.'],
+      ['Editing: Read Aloud Mentally', 'Grammar questions are easier when you hear the sentence in your head — the error often sounds wrong.'],
+      ['Do Not Leave Essay Blank', 'Even a 2-paragraph response with a clear claim and one piece of evidence scores partial marks.'],
+    ],
+    mistakes: [
+      ['Not taking a position in the Extended Response', 'The essay must argue a specific stance; a neutral summary of both sides scores poorly.'],
+      ['Ignoring text evidence', 'Unsupported opinions score low; every claim needs a reference to one of the two provided texts.'],
+      ['Run-on sentences in the essay', 'Join independent clauses with a semicolon or a coordinating conjunction (and, but, so) — not just a comma.'],
+      ['Spending too long on one reading passage', 'Budget roughly 4–5 minutes per passage in Part 3; move on even if some questions are uncertain.'],
+    ],
+    resources: [
+      ['Khan Academy GED Language Arts', 'Free Online', 'Essential'],
+      ['GED.com Official Language Arts Guide', 'Official Website', 'Essential'],
+      ['Purdue OWL Grammar Guide', 'Free Website', 'Recommended'],
+      ['GED Ready Language Arts Practice Test', 'Official Platform', 'Essential'],
+      ['Kaplan GED Test Prep — Language Arts', 'Textbook', 'Recommended'],
+    ],
+  },
+};
+
+/* ─── Icon paths ─────────────────────────────────────────────────────── */
 const iconPaths = {
   headphones: '<path d="M3 14v-2a9 9 0 0 1 18 0v2"/><path d="M21 14a2 2 0 0 1-2 2h-1v-4h1a2 2 0 0 1 2 2Z"/><path d="M3 14a2 2 0 0 0 2 2h1v-4H5a2 2 0 0 0-2 2Z"/>',
   target: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
   book: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
 };
 
-const commonQuestionTypes = [
-  ['Multiple Choice', 'Choose correct answer from options', 'Medium', 'Read questions before audio, predict answer type, eliminate wrong options'],
-  ['Form/Note Completion', 'Fill in missing information in forms or notes', 'Easy', 'Anticipate what type of info is needed, write as you hear'],
-  ['Matching', 'Match items from a list to categories', 'Hard', 'Preview all options, note keywords, track multiple answers simultaneously'],
-  ['Map/Diagram Labeling', 'Label parts of a map or diagram', 'Medium', 'Study the map first, understand direction words, follow the speaker path'],
-  ['Short Answer Questions', 'Write short answers from listening', 'Easy', 'Check word limit, write exactly what you hear, use correct spelling'],
-];
-
-const strategies = [
-  ['Daily Practice', '30-60 min/day', ['Listen to authentic materials', 'Review mistakes immediately', 'Track vocabulary in context']],
-  ['Active Listening Skills', '3-4 times/week', ['Predict content before listening', 'Follow signpost words', 'Summarize main ideas']],
-  ['Test Simulation', 'Weekly', ['Take full-length practice tests', 'Transfer answers carefully', 'Analyze weak question types']],
-];
-
-const timeTips = [
-  ['Use Preparation Time Wisely', 'Read questions and underline keywords during prep time.'],
-  ['Do not Get Stuck', 'If you miss an answer, move on immediately to avoid missing subsequent questions.'],
-  ['Transfer Time Efficiently', 'You have time at the end to transfer answers. Check spelling carefully.'],
-  ['Predict Answers', 'Before listening, think about what type of word fits the blank.'],
-];
-
-const mistakes = [
-  ['Not reading questions beforehand', 'Always use preparation time to read and predict answers.'],
-  ['Writing more words than allowed', 'Strictly follow word limits, such as NO MORE THAN TWO WORDS.'],
-  ['Incorrect spelling', 'Practice common vocabulary spelling and copy exactly what you hear.'],
-  ['Missing plural forms', 'Listen carefully for s at the end of words.'],
-  ['Getting stuck on one question', 'Move on immediately if you miss an answer.'],
-];
-
-const resources = [
-  ['Cambridge IELTS Books 1-18', 'Official Practice', 'Essential'],
-  ['IELTS Listening Practice Tests', 'Online', 'Recommended'],
-  ['BBC Learning English', 'Free Website', 'Supplementary'],
-  ['IELTS Liz Listening Tips', 'YouTube', 'Recommended'],
-  ['British Council IELTS Prep', 'Official Course', 'Premium'],
-];
-
+/* ─── Helpers ────────────────────────────────────────────────────────── */
 function svg(path) {
   return `<svg viewBox="0 0 24 24" aria-hidden="true">${path}</svg>`;
 }
 
 function slugify(value) {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  return String(value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
 
 function getContext() {
@@ -204,62 +1030,118 @@ function getContext() {
   const examKey = (params.get('exam') || 'IELTS').toUpperCase();
   const exam = exams[examKey] || exams.IELTS;
   const sectionParam = params.get('section') || '';
-  const section = exam.sections.find((item) => slugify(item) === sectionParam.toLowerCase()) || exam.sections[0];
-  return { examKey: exams[examKey] ? examKey : 'IELTS', exam, section };
+  const matchedSlug = exam.slugs.find((s) => s === sectionParam.toLowerCase()) || exam.slugs[0];
+  const sectionIndex = exam.slugs.indexOf(matchedSlug);
+  const sectionName = exam.sections[sectionIndex] || exam.sections[0];
+  return { examKey: exams[examKey] ? examKey : 'IELTS', exam, slug: matchedSlug, sectionName };
+}
+
+function getData(examKey, slug) {
+  const key = `${examKey}:${slug}`;
+  if (sectionData[key]) return sectionData[key];
+
+  /* Fallback — generate generic content from exam metadata */
+  return {
+    overview: exams[examKey].sections.map((s, i) =>
+      `${s} — Practice set ${i + 1}: Covers all ${s} formats and question types for ${examKey}`),
+    questionTypes: [
+      ['Multiple Choice', 'Select the best answer from the provided options', 'Medium', 'Read all options before choosing; eliminate clearly wrong answers first'],
+      ['Short Answer', 'Write a brief answer using information from the source material', 'Medium', 'Be concise and specific; use the exact wording from the source where required'],
+      ['Extended Response', 'Write a longer response demonstrating comprehension and analysis', 'Hard', 'Plan your response before writing; structure with clear opening, body, and conclusion'],
+    ],
+    strategies: [
+      ['Regular Practice', '30–60 min/day', ['Use official practice materials from the exam provider', 'Review every incorrect answer immediately after practice', 'Track which question types cause the most errors']],
+      ['Study Vocabulary', '4 times/week', ['Learn the most common vocabulary for this exam section', 'Use flashcards with example sentences', 'Review and test yourself every three days']],
+      ['Mock Tests', 'Weekly', ['Simulate real exam conditions — timed and without breaks', 'Score yourself honestly and note areas for improvement', 'Re-sit topics where you score below 70%']],
+    ],
+    timeTips: [
+      ['Manage Your Time', 'Divide available time evenly across questions; do not spend more than 2 minutes on any single item initially.'],
+      ['Read Carefully', 'Read each question twice before answering to avoid misunderstanding what is being asked.'],
+      ['Skip and Return', 'Mark difficult questions and return to them after completing the easier ones.'],
+      ['Check Your Work', 'If time allows, review answers — especially ones you were unsure about.'],
+    ],
+    mistakes: [
+      ['Rushing through questions', 'Careless errors are the most preventable; slow down and read carefully.'],
+      ['Ignoring instructions', 'Follow word limits, format requirements, and any special instructions in each question.'],
+      ['Not practising under timed conditions', 'Exam timing is pressured; always practise with a timer running.'],
+      ['Skipping review of wrong answers', 'Every wrong answer is a learning opportunity; find out why it was wrong before your next practice session.'],
+    ],
+    resources: [
+      [`Official ${examKey} Practice Materials`, 'Official Website', 'Essential'],
+      [`${examKey} Study Guide`, 'Textbook', 'Recommended'],
+      ['Khan Academy', 'Free Online', 'Supplementary'],
+      ['YouTube Study Channels', 'Free Video', 'Supplementary'],
+    ],
+  };
+}
+
+/* ─── Render functions ───────────────────────────────────────────────── */
+function metaIcon(type) {
+  if (type === 'clock') return svg('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>');
+  if (type === 'target') return svg('<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/>');
+  return svg('<path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>');
+}
+
+function renderSectionTabs(examKey, exam, currentSlug) {
+  const tabs = exam.sections.map((name, i) => {
+    const slug = exam.slugs[i];
+    const isActive = slug === currentSlug;
+    return `<a href="test.html?exam=${encodeURIComponent(examKey)}&section=${encodeURIComponent(slug)}"
+      class="${isActive ? 'active' : ''}"
+      aria-current="${isActive ? 'page' : 'false'}">${name}</a>`;
+  }).join('');
+  document.getElementById('sectionTabs').innerHTML = tabs;
 }
 
 function render() {
-  const { examKey, exam, section } = getContext();
-  const duration = exam.duration[section] || Object.values(exam.duration)[0];
-  const questions = exam.questions[section] || Object.values(exam.questions)[0];
-  const mastery = examKey === 'SAT' ? '72%' : examKey === 'HSK' ? '55%' : '60%';
+  const { examKey, exam, slug, sectionName } = getContext();
+  const data = getData(examKey, slug);
+  const duration = exam.duration[slug] || Object.values(exam.duration)[0];
+  const questions = exam.questions[slug] || Object.values(exam.questions)[0];
 
-  document.title = `${exam.display} ${section} Preparation — Дараагийн Алхам`;
+  document.title = `${exam.display} ${sectionName} Preparation — Дараагийн Алхам`;
   document.getElementById('heroIcon').innerHTML = svg(iconPaths[exam.icon] || iconPaths.book);
-  document.getElementById('prepTitle').textContent = `${exam.display} ${section} Preparation`;
-  document.getElementById('prepSubtitle').textContent = `Master the ${exam.display} ${section} section with comprehensive strategies, practice techniques, and expert guidance`;
+  document.getElementById('prepTitle').textContent = `${exam.display} — ${sectionName}`;
+  document.getElementById('prepSubtitle').textContent =
+    `Master the ${exam.display} ${sectionName} section with comprehensive strategies, practice techniques, and expert guidance.`;
   document.getElementById('prepMeta').innerHTML = [
     ['clock', duration],
     ['target', questions],
     ['chart', exam.score],
   ].map(([type, text]) => `<span>${metaIcon(type)} ${text}</span>`).join('');
 
+  renderSectionTabs(examKey, exam, slug);
+
+  /* Progress */
+  const scoreMap = { IELTS: '6.5', TOEFL: '88', SAT: '1320', HSK: '210', TOPIK: '78', GED: '152' };
   document.getElementById('progressGrid').innerHTML = [
-    ['Current Score', examKey === 'IELTS' ? '6.5' : examKey === 'SAT' ? '1320' : '78', `Target: ${exam.target}`, '55%'],
+    ['Current Score', scoreMap[examKey] || '—', `Target: ${exam.target}`, '55%'],
     ['Practice Hours', '35', '', '62%'],
     ['Mock Tests', '4/10', '', '40%'],
-    ['Mastery', mastery, '', mastery],
+    ['Mastery', '60%', '', '60%'],
   ].map(([label, value, sub, width]) => `
     <article class="progress-card">
       <span>${label}</span>
       <strong>${value}</strong>
       ${sub ? `<small>${sub}</small>` : `<div class="meter"><i style="width:${width}"></i></div>`}
-      ${sub ? '' : ''}
-    </article>
-  `).join('');
+    </article>`).join('');
 
-  document.querySelectorAll('.progress-card').forEach((card, index) => {
-    if (index === 0) return;
-    if (!card.querySelector('.meter')) card.insertAdjacentHTML('beforeend', '<div class="meter"><i style="width:60%"></i></div>');
-  });
+  /* Recommendation */
+  document.getElementById('recommendIntro').textContent =
+    `Based on your progress, we recommend focusing on ${sectionName}:`;
+  document.getElementById('recommendList').innerHTML = (data.questionTypes.slice(0, 3)).map(
+    ([title]) => `<li><strong>${title}</strong> — Practise 5–10 questions daily and review every error.</li>`
+  ).join('');
 
-  document.getElementById('recommendIntro').textContent = `Based on your current progress, we recommend focusing on ${section}:`;
-  document.getElementById('recommendList').innerHTML = [
-    ['Matching questions', 'Your weakest area. Practice 2-3 sets daily.'],
-    ['Note-taking speed', 'Take dictation exercises to improve writing speed.'],
-    ['Mock tests', 'Complete 6 more full-length tests before exam day.'],
-  ].map(([strong, text]) => `<li><strong>${strong}</strong> - ${text}</li>`).join('');
-
-  const overviewItems = getOverviewItems(examKey, section, exam);
-  document.getElementById('overviewGrid').innerHTML = overviewItems.map((item, index) => `
+  /* Overview */
+  document.getElementById('overviewGrid').innerHTML = data.overview.map((item, i) => `
     <article class="overview-card">
-      <h3>Part ${index + 1}</h3>
+      <h3>Part ${i + 1}</h3>
       <p>${item}</p>
-      <small>${questionRange(index)}</small>
-    </article>
-  `).join('');
+    </article>`).join('');
 
-  document.getElementById('questionTypes').innerHTML = commonQuestionTypes.map(([title, desc, level, strategy]) => `
+  /* Question types */
+  document.getElementById('questionTypes').innerHTML = data.questionTypes.map(([title, desc, level, strategy]) => `
     <article class="question-card">
       <div class="card-row">
         <h3>${title}</h3>
@@ -267,62 +1149,39 @@ function render() {
       </div>
       <p>${desc}</p>
       <div class="strategy-note">${svg('<path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.75V17h8v-2.25A7 7 0 0 0 12 2z"/>')} <strong>Strategy:</strong> ${strategy}</div>
-    </article>
-  `).join('');
+    </article>`).join('');
 
-  document.getElementById('strategyGrid').innerHTML = strategies.map(([title, cadence, items]) => `
+  /* Strategies */
+  document.getElementById('strategyGrid').innerHTML = data.strategies.map(([title, cadence, items]) => `
     <article class="strategy-card">
       <h3>${title}</h3>
       <small>${svg('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>')} ${cadence}</small>
       <ol>${items.map((item) => `<li>${item}</li>`).join('')}</ol>
-    </article>
-  `).join('');
+    </article>`).join('');
 
-  document.getElementById('timeTips').innerHTML = timeTips.map(([title, text], index) => `
+  /* Time tips */
+  document.getElementById('timeTips').innerHTML = data.timeTips.map(([title, text], i) => `
     <article class="time-tip">
-      <span>${index + 1}</span>
+      <span>${i + 1}</span>
       <div><h3>${title}</h3><p>${text}</p></div>
-    </article>
-  `).join('');
+    </article>`).join('');
 
-  document.getElementById('mistakeList').innerHTML = mistakes.map(([title, fix]) => `
+  /* Mistakes */
+  document.getElementById('mistakeList').innerHTML = data.mistakes.map(([title, fix]) => `
     <article class="mistake-card">
       <span class="mistake-icon">${svg('<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>')}</span>
       <div>
-        <h3>× ${title}</h3>
+        <h3>✗ ${title}</h3>
         <p>${svg('<path d="M20 6 9 17l-5-5"/>')} <strong>Fix:</strong> ${fix}</p>
       </div>
-    </article>
-  `).join('');
+    </article>`).join('');
 
-  document.getElementById('resourceList').innerHTML = resources.map(([title, type, badge]) => `
+  /* Resources */
+  document.getElementById('resourceList').innerHTML = data.resources.map(([title, type, badge]) => `
     <a class="resource-row" href="exam-info.html">
       <span><strong>${title}</strong><small>${type}</small></span>
       <em class="${badge.toLowerCase()}">${badge}</em>
-    </a>
-  `).join('');
-}
-
-function metaIcon(type) {
-  if (type === 'clock') return svg('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>');
-  if (type === 'target') return svg('<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/>');
-  return svg('<path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>');
-}
-
-function getOverviewItems(examKey, section, exam) {
-  if (examKey === 'IELTS' && section === 'Listening') {
-    return [
-      'Social conversation between two people',
-      'Monologue in a social context',
-      'Academic conversation (up to 4 people)',
-      'Academic monologue/lecture',
-    ];
-  }
-  return exam.sections.slice(0, 4).map((item) => `${item} focused practice and scoring patterns`);
-}
-
-function questionRange(index) {
-  return ['Questions 1-10', 'Questions 11-20', 'Questions 21-30', 'Questions 31-40'][index] || 'Practice set';
+    </a>`).join('');
 }
 
 render();

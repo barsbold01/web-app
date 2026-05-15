@@ -297,11 +297,21 @@ function renderExamCards() {
     : `<div class="empty-state">Ийм шалгалт олдсонгүй. Хайлтаа өөрчлөөд дахин оролдоорой.</div>`;
 }
 
+const FIRST_SECTION_SLUG = {
+  IELTS: 'listening',
+  TOEFL: 'reading',
+  SAT: 'reading-writing',
+  HSK: 'hsk-1-2',
+  TOPIK: 'topik-i',
+  GED: 'math',
+};
+
 function examCardTemplate(key) {
   const exam = EXAMS[key];
   const meta = examMeta[key] || {};
   const sections = exam.format.map((item) => item.section).slice(0, 4).join(', ');
   const firstDate = exam.upcomingDates?.[0] || 'Тун удахгүй';
+  const practiceSlug = FIRST_SECTION_SLUG[key] || 'general';
 
   return `
     <article class="exam-card" style="--exam-tone:${meta.tone};--exam-soft:${meta.soft};">
@@ -333,8 +343,8 @@ function examCardTemplate(key) {
 
       <div class="exam-card__actions">
         <button class="outline-button" type="button" data-open-exam="${escapeHtml(key)}">Дэлгэрэнгүй</button>
-        <a class="solid-button${key !== 'IELTS' ? ' is-muted' : ''}" href="${key === 'IELTS' ? 'test.html?exam=IELTS&section=listening' : '#scoreComparison'}">
-          ${key === 'IELTS' ? 'IELTS дасгал' : 'Харьцуулах'}
+        <a class="solid-button" href="test.html?exam=${escapeHtml(key)}&section=${escapeHtml(practiceSlug)}">
+          ${escapeHtml(key)} дасгал
           ${svgIcon('<path d="M7 17 17 7"/><path d="M7 7h10v10"/>', 14)}
         </a>
       </div>
