@@ -3,1188 +3,677 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Exam Preparation — Дараагийн Алхам</title>
-  <link rel="stylesheet" href="../css/test.css?v=20260512" />
+  <title>Practice Test — Дараагийн Алхам</title>
+  <link rel="stylesheet" href="../css/test.css?v=20260513" />
   <style>
-    .section-tabs{display:flex;gap:8px;flex-wrap:wrap;padding:16px 24px;background:#fff;border-bottom:2px solid #E5E7EB;position:sticky;top:0;z-index:10}
-    .section-tabs a{padding:8px 16px;font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.05em;text-transform:uppercase;text-decoration:none;border:2px solid #0A0E27;color:#0A0E27;transition:background .15s,color .15s}
-    .section-tabs a:hover{background:#0A0E27;color:#CCFF00}
-    .section-tabs a.active{background:#0A0E27;color:#CCFF00}
-    .loading-overlay{display:flex;align-items:center;justify-content:center;min-height:300px;font-family:'Space Grotesk',sans-serif;font-size:1rem;color:#6B7280}
-    .fallback-banner{background:#FEF3C7;border:2px solid #D97706;padding:12px 20px;margin:0 0 24px;font-family:'Space Grotesk',sans-serif;font-size:.875rem;color:#92400E}
+    /* ── Progress bar ─────────────────────────────── */
+    .progress-wrap{display:flex;align-items:center;gap:14px;margin-bottom:18px;padding:14px 18px;background:#fff;border:2px solid #0A0E27}
+    .progress-bar-track{flex:1;height:8px;background:#E5E7EB;border:2px solid #0A0E27;overflow:hidden}
+    .progress-bar-fill{height:100%;background:#CCFF00;transition:width .3s}
+    .progress-label{font-family:'Syne',sans-serif;font-weight:800;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;color:#0A0E27}
+
+    /* ── Option buttons ───────────────────────────── */
+    .options-grid{display:grid;gap:8px;margin-top:4px}
+    .option-btn{width:100%;min-height:46px;display:flex;align-items:center;gap:12px;padding:10px 14px;border:2px solid #0A0E27;background:#FAFAFA;color:#0A0E27;font-family:'Space Grotesk',sans-serif;font-size:.88rem;font-weight:700;text-align:left;cursor:pointer;transition:background .12s,color .12s}
+    .option-btn:hover{background:#0A0E27;color:#CCFF00}
+    .option-btn.selected{background:#0A0E27;color:#CCFF00}
+    .option-btn.correct{background:#16A34A;color:#fff;border-color:#16A34A}
+    .option-btn.wrong{background:#DC2626;color:#fff;border-color:#DC2626}
+    .option-letter{width:26px;height:26px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#CCFF00;border:2px solid currentColor;font-family:'Syne',sans-serif;font-weight:800;font-size:.72rem}
+    .option-btn.selected .option-letter,.option-btn:hover .option-letter{background:#CCFF00;border-color:#CCFF00;color:#0A0E27}
+    .option-btn.correct .option-letter{background:#fff;color:#16A34A;border-color:#fff}
+    .option-btn.wrong .option-letter{background:#fff;color:#DC2626;border-color:#fff}
+
+    /* ── Nav actions ──────────────────────────────── */
+    .quiz-nav{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+    .quiz-nav button{min-height:44px;padding:0 22px;border:2px solid #0A0E27;font-family:'Syne',sans-serif;font-weight:800;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background .12s}
+    #prevBtn{background:#fff;color:#0A0E27}
+    #prevBtn:hover{background:#E5E7EB}
+    #nextBtn{background:#0A0E27;color:#CCFF00}
+    #nextBtn:hover{background:#000}
+    #submitBtn{background:#CCFF00;color:#0A0E27;border-color:#0A0E27}
+    #submitBtn:hover{background:#b8e600}
+    button:disabled{opacity:.35;cursor:not-allowed}
+
+    /* ── Result feedback ──────────────────────────── */
+    .feedback-box{margin-top:14px;padding:12px 16px;border:2px solid #0A0E27;font-family:'Space Grotesk',sans-serif;font-size:.85rem;font-weight:700;line-height:1.55}
+    .feedback-box.correct{background:#DCFCE7;border-color:#16A34A;color:#14532D}
+    .feedback-box.wrong{background:#FEE2E2;border-color:#DC2626;color:#7F1D1D}
+
+    /* ── Results panel ────────────────────────────── */
+    .results-panel{display:none;background:#0A0E27;border:4px solid #0A0E27;padding:40px;color:#fff;text-align:center;margin-top:24px}
+    .results-panel.visible{display:block}
+    .results-score{font-family:'Syne',sans-serif;font-size:4rem;font-weight:800;color:#CCFF00;line-height:1}
+    .results-label{font-size:.85rem;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:.08em;text-transform:uppercase;margin-top:8px}
+    .results-msg{margin:20px 0 28px;font-size:1.1rem;color:rgba(255,255,255,.8);font-weight:600;line-height:1.6}
+    .results-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+    .results-actions button{min-height:46px;padding:0 28px;border:2px solid #CCFF00;font-family:'Syne',sans-serif;font-weight:800;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+    #retryBtn{background:#CCFF00;color:#0A0E27}
+    #retryBtn:hover{background:#b8e600}
+    #reviewBtn{background:transparent;color:#CCFF00}
+    #reviewBtn:hover{background:rgba(204,255,0,.1)}
+    .review-list{margin-top:32px;display:grid;gap:12px;text-align:left}
+    .review-item{padding:14px 16px;border:2px solid rgba(255,255,255,.15)}
+    .review-item.r-correct{border-color:#16A34A}
+    .review-item.r-wrong{border-color:#DC2626}
+    .review-item .ri-q{font-size:.88rem;font-weight:700;color:rgba(255,255,255,.85);margin-bottom:8px}
+    .review-item .ri-a{font-size:.8rem;color:rgba(255,255,255,.55)}
+    .review-item .ri-correct{color:#CCFF00;font-weight:700}
+
+    /* ── Question context box ─────────────────────── */
+    .context-box{background:#F3F4F6;border:2px solid #0A0E27;padding:16px;margin-bottom:20px;font-size:.88rem;line-height:1.7;color:#374151;font-weight:600}
+    .context-box strong{display:block;font-family:'Syne',sans-serif;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:#0A0E27;margin-bottom:8px}
+
+    /* ── Question number dot nav ──────────────────── */
+    .dot-nav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+    .dot-nav button{width:32px;height:32px;border:2px solid #0A0E27;background:#fff;font-family:'Syne',sans-serif;font-size:.7rem;font-weight:800;cursor:pointer}
+    .dot-nav button.answered{background:#CCFF00}
+    .dot-nav button.current{background:#0A0E27;color:#CCFF00}
+    .dot-nav button.q-correct{background:#16A34A;color:#fff;border-color:#16A34A}
+    .dot-nav button.q-wrong{background:#DC2626;color:#fff;border-color:#DC2626}
+
+    /* ── Timer colors ─────────────────────────────── */
+    .timer-panel strong.warn{color:#FBBF24}
+    .timer-panel strong.danger{color:#F87171}
+
+    @media(max-width:768px){
+      .quiz-nav{flex-direction:column}
+      .quiz-nav button{width:100%}
+      .results-actions{flex-direction:column;align-items:center}
+    }
   </style>
 </head>
 <body>
-  <main class="prep-page">
-    <a class="back-button" href="exam-info.html">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
-      Back to Exams
-    </a>
+<main class="practice-page">
 
-    <section class="prep-hero">
-      <div class="prep-hero__icon" id="heroIcon"></div>
-      <div class="prep-hero__copy">
-        <h1 id="prepTitle">Exam Preparation</h1>
-        <p id="prepSubtitle">Comprehensive strategies, practice techniques, and expert guidance</p>
-        <div class="prep-meta" id="prepMeta"></div>
+  <!-- Back -->
+  <a class="back-link" href="exam-info.html">
+    <svg viewBox="0 0 24 24" width="14" height="14"><path d="M15 18l-6-6 6-6"/></svg>
+    Back to Exams
+  </a>
+
+  <!-- Hero + Timer -->
+  <section class="practice-hero">
+    <div>
+      <span class="eyebrow" id="heroEyebrow">Practice Test</span>
+      <h1 id="heroTitle">IELTS Listening</h1>
+      <p id="heroSub">Work through exam-style questions one by one. Select your answer and submit to see feedback.</p>
+    </div>
+    <div class="timer-panel">
+      <span>Time Remaining</span>
+      <strong id="timerDisplay">30:00</strong>
+      <small style="color:rgba(255,255,255,.45);font-size:.72rem;margin-top:6px;display:block">Press Start to begin</small>
+      <button id="timerStartBtn" style="margin-top:14px;padding:8px 16px;background:#CCFF00;border:2px solid #CCFF00;color:#0A0E27;font-family:'Syne',sans-serif;font-weight:800;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer">START TIMER</button>
+    </div>
+  </section>
+
+  <!-- Section tabs -->
+  <nav class="section-tabs" id="sectionTabs" aria-label="Exam sections"></nav>
+
+  <!-- Progress -->
+  <div class="progress-wrap">
+    <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+    <span class="progress-label" id="progressLabel">Question 1 of 10</span>
+  </div>
+
+  <!-- Dot navigator -->
+  <div class="dot-nav" id="dotNav"></div>
+
+  <!-- Main layout -->
+  <div class="practice-layout">
+
+    <!-- Question panel -->
+    <div class="task-panel" id="questionPanel">
+      <div class="panel-heading">
+        <span id="questionCategory">Listening</span>
+        <strong id="questionBadge">Q1</strong>
       </div>
-    </section>
+      <div id="contextBox"></div>
+      <h2 id="questionText" style="font-size:1.35rem;line-height:1.4;margin-bottom:0"></h2>
+    </div>
 
-    <nav class="section-tabs" id="sectionTabs" aria-label="Exam sections"></nav>
-
-    <section class="progress-band">
-      <h2>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-4 12.75V17h8v-2.25A7 7 0 0 0 12 2z"/><path d="M9 21h6"/><path d="M10 17h4"/></svg>
-        Your Progress
-      </h2>
-      <div class="progress-grid" id="progressGrid"></div>
-    </section>
-
-    <section class="recommend-card">
-      <div class="section-icon">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-4 12.75V17h8v-2.25A7 7 0 0 0 12 2z"/><path d="M9 21h6"/><path d="M10 17h4"/></svg>
+    <!-- Answer + tip panel -->
+    <div class="answer-panel">
+      <div class="answer-card">
+        <h3>Your Answer</h3>
+        <div class="options-grid" id="optionsGrid"></div>
+        <div id="feedbackBox"></div>
       </div>
-      <div>
-        <h2>AI Study Recommendation</h2>
-        <p id="recommendIntro">Based on your current progress, we recommend focusing on:</p>
-        <ul class="check-list" id="recommendList"></ul>
+      <div class="tip-card" id="tipCard">
+        <h3>Exam Tip</h3>
+        <p id="tipText">Read all options before choosing. Eliminate clearly wrong answers first.</p>
       </div>
-    </section>
+    </div>
+  </div>
 
-    <section class="content-block">
-      <h2 class="block-title">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-        Section Overview
-      </h2>
-      <div class="overview-grid" id="overviewGrid"></div>
-    </section>
+  <!-- Navigation -->
+  <div class="quiz-nav">
+    <button id="prevBtn" disabled>← Previous</button>
+    <button id="submitBtn">Check Answer</button>
+    <button id="nextBtn" disabled>Next →</button>
+  </div>
 
-    <section class="content-block">
-      <h2 class="block-title">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>
-        Common Question Types
-      </h2>
-      <div class="question-types" id="questionTypes"></div>
-    </section>
+  <!-- Results -->
+  <div class="results-panel" id="resultsPanel">
+    <div class="results-score" id="resultsScore">0/10</div>
+    <div class="results-label">Final Score</div>
+    <div class="results-msg" id="resultsMsg"></div>
+    <div class="results-actions">
+      <button id="retryBtn">↺ Retry Test</button>
+      <button id="reviewBtn">Review Answers</button>
+    </div>
+    <div class="review-list" id="reviewList" style="display:none"></div>
+  </div>
 
-    <section class="content-block">
-      <h2 class="block-title">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>
-        Preparation Strategies
-      </h2>
-      <div class="strategy-grid" id="strategyGrid"></div>
-    </section>
-
-    <section class="content-block">
-      <h2 class="block-title alert">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
-        Time Management Tips
-      </h2>
-      <div class="time-grid" id="timeTips"></div>
-    </section>
-
-    <section class="content-block">
-      <h2 class="block-title danger">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
-        Mistakes to Avoid
-      </h2>
-      <div class="mistake-list" id="mistakeList"></div>
-    </section>
-
-    <section class="content-block">
-      <h2 class="block-title">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-        Recommended Resources
-      </h2>
-      <div class="resource-list" id="resourceList"></div>
-    </section>
-
-    <section class="ready-cta">
-      <h2>Ready to Practice?</h2>
-      <p>Access mock tests, practice exercises, and personalized study plans</p>
-      <div class="cta-actions">
-        <a class="btn-primary" href="exam-info.html">Explore All Exams</a>
-        <a class="btn-secondary" href="#overviewGrid">View Overview</a>
-      </div>
-    </section>
-  </main>
+</main>
 
 <script>
-/* ─── Exam catalogue ─────────────────────────────────────────────────── */
-const exams = {
-  IELTS: {
-    display: 'IELTS',
-    icon: 'headphones',
-    score: 'Band 0–9',
-    target: '7.5',
-    sections: ['Listening', 'Reading', 'Writing', 'Speaking'],
-    slugs:    ['listening', 'reading', 'writing', 'speaking'],
-    duration: { listening: '30 min', reading: '60 min', writing: '60 min', speaking: '11–14 min' },
-    questions:{ listening: '40 questions', reading: '40 questions', writing: '2 tasks', speaking: '3 parts' },
-  },
-  TOEFL: {
-    display: 'TOEFL iBT',
-    icon: 'headphones',
-    score: '0–120',
-    target: '100',
-    sections: ['Reading', 'Listening', 'Speaking', 'Writing'],
-    slugs:    ['reading', 'listening', 'speaking', 'writing'],
-    duration: { reading: '35 min', listening: '36 min', speaking: '16 min', writing: '29 min' },
-    questions:{ reading: '20 questions', listening: '28 questions', speaking: '4 tasks', writing: '2 tasks' },
-  },
-  SAT: {
-    display: 'SAT',
-    icon: 'target',
-    score: '400–1600',
-    target: '1450',
-    sections: ['Reading & Writing', 'Math'],
-    slugs:    ['reading-writing', 'math'],
-    duration: { 'reading-writing': '64 min', math: '70 min' },
-    questions:{ 'reading-writing': '54 questions', math: '44 questions' },
-  },
-  HSK: {
-    display: 'HSK',
-    icon: 'book',
-    score: '300 points',
-    target: '240',
-    sections: ['HSK 1–2', 'HSK 3–4', 'HSK 5–6'],
-    slugs:    ['hsk-1-2', 'hsk-3-4', 'hsk-5-6'],
-    duration: { 'hsk-1-2': '40–55 min', 'hsk-3-4': '85–100 min', 'hsk-5-6': '125–140 min' },
-    questions:{ 'hsk-1-2': 'Foundation set', 'hsk-3-4': 'Intermediate set', 'hsk-5-6': 'Advanced set' },
-  },
-  TOPIK: {
-    display: 'TOPIK',
-    icon: 'book',
-    score: 'TOPIK I / II',
-    target: 'Level 4',
-    sections: ['TOPIK I', 'Listening', 'Reading', 'Writing'],
-    slugs:    ['topik-i', 'listening', 'reading', 'writing'],
-    duration: { 'topik-i': '100 min', listening: '60 min', reading: '70 min', writing: '50 min' },
-    questions:{ 'topik-i': '70 questions', listening: '50 questions', reading: '50 questions', writing: '4 tasks' },
-  },
-  GED: {
-    display: 'GED',
-    icon: 'target',
-    score: '100–200 per subject',
-    target: '170',
-    sections: ['Math', 'Science', 'Social Studies', 'Language Arts'],
-    slugs:    ['math', 'science', 'social-studies', 'language-arts'],
-    duration: { math: '115 min', science: '90 min', 'social-studies': '70 min', 'language-arts': '150 min' },
-    questions:{ math: '46 questions', science: '34 questions', 'social-studies': '35 questions', 'language-arts': '2 parts' },
-  },
+/* ══════════════════════════════════════════════════════════════
+   EXAM CATALOGUE
+══════════════════════════════════════════════════════════════ */
+const EXAMS = {
+  IELTS:{display:'IELTS',sections:['Listening','Reading','Writing','Speaking'],slugs:['listening','reading','writing','speaking'],durations:{listening:1800,reading:3600,writing:3600,speaking:840}},
+  TOEFL:{display:'TOEFL iBT',sections:['Reading','Listening','Speaking','Writing'],slugs:['reading','listening','speaking','writing'],durations:{reading:2100,listening:2160,speaking:960,writing:1740}},
+  SAT:{display:'SAT',sections:['Reading & Writing','Math'],slugs:['reading-writing','math'],durations:{'reading-writing':3840,math:4200}},
+  HSK:{display:'HSK',sections:['HSK 1–2','HSK 3–4','HSK 5–6'],slugs:['hsk-1-2','hsk-3-4','hsk-5-6'],durations:{'hsk-1-2':3300,'hsk-3-4':5700,'hsk-5-6':8100}},
+  TOPIK:{display:'TOPIK',sections:['TOPIK I','Listening','Reading','Writing'],slugs:['topik-i','listening','reading','writing'],durations:{'topik-i':6000,listening:3600,reading:4200,writing:3000}},
+  GED:{display:'GED',sections:['Math','Science','Social Studies','Language Arts'],slugs:['math','science','social-studies','language-arts'],durations:{math:6900,science:5400,'social-studies':4200,'language-arts':9000}},
 };
 
-/* ─── Per-exam / per-section content ─────────────────────────────────── */
-const sectionData = {
+/* ══════════════════════════════════════════════════════════════
+   QUESTION BANK  (8–10 questions per section)
+   { q, context, options, answer (0-based index), tip, category }
+══════════════════════════════════════════════════════════════ */
+const QB = {
 
-  /* ══════ IELTS ══════ */
-  'IELTS:listening': {
-    overview: [
-      'Part 1 — Social conversation between two people in an everyday context',
-      'Part 2 — Monologue in a social or semi-formal setting',
-      'Part 3 — Academic discussion among up to four speakers',
-      'Part 4 — Academic monologue or lecture on a study topic',
-    ],
-    questionTypes: [
-      ['Multiple Choice', 'Select the correct answer from A, B, or C options', 'Medium', 'Read questions before the audio plays; predict the answer type; use the option text as a listening guide'],
-      ['Form/Note Completion', 'Fill in missing words in a form, table, or notes', 'Easy', 'Check word limits, write exactly what you hear, watch for plurals and spellings'],
-      ['Matching', 'Match listed items to a set of categories', 'Hard', 'Preview all options first; note keywords; track multiple answers simultaneously'],
-      ['Map / Diagram Labelling', 'Label parts of a map or diagram using words from the recording', 'Medium', 'Study the visual before audio; understand directional vocabulary (north/left/opposite)'],
-      ['Sentence Completion', 'Complete sentences using words from the audio', 'Easy', 'Predict the grammar type; the answer often paraphrases the prompt'],
-    ],
-    strategies: [
-      ['Daily Listening Practice', '30–60 min/day', ['Use authentic English podcasts & news', 'Dictation exercises to train ear-hand speed', 'Review every answer immediately after practice']],
-      ['Predictive Reading', '3–4 times/week', ['Read ahead during prep time to anticipate content', 'Underline keywords in questions', 'Predict word type (noun, number, adjective) before audio starts']],
-      ['Full Mock Tests', 'Weekly', ['Simulate exam conditions — no pausing', 'Transfer answers carefully in the 10-minute transfer window', 'Track weak question types and revise patterns']],
-    ],
-    timeTips: [
-      ['Use Preparation Time', 'During the 30-second break before each part, read the upcoming questions and underline keywords.'],
-      ['Move On Immediately', 'If you miss a question, skip it at once — do not replay in your head or you will miss the next answer.'],
-      ['Transfer Carefully', 'Use the 10-minute transfer time at the end; check spelling, plurals, and word limits (e.g. NO MORE THAN TWO WORDS).'],
-      ['Predict Before Listening', 'Think about what kind of word fits each blank (name, number, date, adjective) before the audio plays.'],
-    ],
-    mistakes: [
-      ['Skipping the preparation time', 'Always read and underline keywords in questions during the prep window.'],
-      ['Exceeding the word limit', 'Stick strictly to "NO MORE THAN TWO WORDS / A NUMBER" — extra words score zero.'],
-      ['Spelling errors', 'Every misspelled answer is marked wrong; practise common exam vocabulary.'],
-      ['Missing plural forms', 'Plural vs. singular matters — listen for the final "s" carefully.'],
-      ['Losing focus mid-section', 'If one answer is missed, immediately move to the next question rather than dwelling on it.'],
-    ],
-    resources: [
-      ['Cambridge IELTS Books 1–18', 'Official Practice Series', 'Essential'],
-      ['British Council IELTS Preparation', 'Official Online Course', 'Premium'],
-      ['IELTS Liz — Listening Tips', 'YouTube Channel', 'Recommended'],
-      ['BBC Learning English', 'Free Website', 'Supplementary'],
-      ['4ielts.com Listening Tests', 'Online Practice', 'Recommended'],
-    ],
-  },
+/* ── IELTS Listening ── */
+'IELTS:listening':[
+  {q:'A woman calls a hotel to make a reservation. She asks for a room for _____ nights.',context:'Listening scenario: A hotel receptionist answers a call from a guest requesting a booking.',options:['A. two','B. three','C. four','D. five'],answer:1,tip:'Listen for numbers carefully — they are often paraphrased or corrected mid-sentence.',category:'Listening — Part 1'},
+  {q:'What type of room does the caller request?',context:'Continued from the hotel booking call.',options:['A. Single room with sea view','B. Double room with breakfast','C. Twin room, non-smoking','D. Suite with parking'],answer:2,tip:'Room-type questions often hinge on one adjective — listen for "non-smoking", "en suite", etc.',category:'Listening — Part 1'},
+  {q:'The volunteer coordinator says the minimum age to join the programme is:',context:'Listening scenario: A monologue by a community volunteer coordinator describing an upcoming project.',options:['A. 16','B. 18','C. 21','D. 25'],answer:1,tip:'Age and number answers are commonly tested in Part 2 monologues.',category:'Listening — Part 2'},
+  {q:'Which activity will NOT take place on Saturday?',context:'The coordinator lists weekend activities: tree planting, river clean-up, and a fundraising walk. The photography workshop has been postponed.',options:['A. Tree planting','B. River clean-up','C. Photography workshop','D. Fundraising walk'],answer:2,tip:'"NOT" questions require you to listen for what is cancelled, excluded, or changed.',category:'Listening — Part 2'},
+  {q:'In the seminar, the tutor says students should submit their draft by:',context:'Listening scenario: Three students discuss a research assignment with their tutor.',options:['A. Monday noon','B. Tuesday 5 pm','C. Wednesday 9 am','D. Thursday midnight'],answer:1,tip:'Deadlines and times are prime targets for Part 3 detail questions.',category:'Listening — Part 3'},
+  {q:'Which method does the professor recommend for organising research notes?',context:'A university lecture on research methodology.',options:['A. Colour-coded folders','B. Spreadsheet with tags','C. Chronological filing','D. Mind map per theme'],answer:3,tip:'Recommendations often come after the phrase "I suggest / recommend / find it helpful to…"',category:'Listening — Part 4'},
+  {q:'The speaker says marine plastic pollution mainly enters the ocean via:',context:'An academic lecture on ocean pollution sources.',options:['A. Industrial dumping','B. River run-off from cities','C. Ship cargo loss','D. Tourist beach littering'],answer:1,tip:'Cause-source questions appear in Part 4. Listen for "primarily", "mainly", "the key factor is".',category:'Listening — Part 4'},
+  {q:'What does the speaker say about microplastics?',context:'Continued from the marine plastic pollution lecture.',options:['A. They dissolve within 10 years','B. They are too small to filter with current technology','C. They only affect surface-feeding fish','D. Their impact on humans is fully understood'],answer:1,tip:'Academic lectures often contrast what IS known vs. what remains uncertain.',category:'Listening — Part 4'},
+],
 
-  'IELTS:reading': {
-    overview: [
-      'Passage 1 — Descriptive or factual text on a topic of general interest',
-      'Passage 2 — More discursive text, often related to work or education',
-      'Passage 3 — Complex argumentative text from an academic source',
-      'All passages — 2,000–2,750 words total; 40 questions in 60 minutes',
-    ],
-    questionTypes: [
-      ['True / False / Not Given', 'Decide whether a statement matches, contradicts, or is absent from the passage', 'Hard', 'NOT GIVEN means the text neither confirms nor denies; do not use outside knowledge'],
-      ['Matching Headings', 'Match a heading to each paragraph in the passage', 'Medium', 'Skim each paragraph for the main idea; the heading must cover the whole paragraph, not just one sentence'],
-      ['Sentence Completion', 'Complete sentences using words from the passage (word limit applies)', 'Medium', 'Use the sentence structure to predict what word type is missing; scan around the likely section'],
-      ['Multiple Choice', 'Select one or more correct options based on the passage', 'Medium', 'Eliminate clearly wrong options; answers usually paraphrase, not quote, the passage'],
-      ['Matching Information', 'Identify which paragraph contains given information', 'Hard', 'Note keywords; paragraphs may be re-used; work question by question, not paragraph by paragraph'],
-    ],
-    strategies: [
-      ['Skimming & Scanning', 'Daily', ['Skim the whole passage in 3–4 min for main idea', 'Scan for specific keywords when answering', 'Never read every word for every question']],
-      ['Vocabulary Building', '4–5 times/week', ['Learn academic word list (AWL) roots', 'Study paraphrases — exam answers rephrase the text', 'Read quality newspapers and journals']],
-      ['Timed Practice', 'Weekly', ['Allocate 20 min per passage strictly', 'Practice writing answers without going back', 'Review wrong answers and identify the exact passage sentence']],
-    ],
-    timeTips: [
-      ['20 Minutes Per Passage', 'Divide your 60 minutes equally — do not let one passage steal time from the rest.'],
-      ['Read Questions First', 'Skim the questions before reading the passage so you know what information to look for.'],
-      ['Transfer as You Go', 'Write answers on the answer sheet as you finish each question — there is no extra transfer time in IELTS Reading.'],
-      ['Guess If Needed', 'There is no negative marking — always write an answer, even if you are not sure.'],
-    ],
-    mistakes: [
-      ['Using outside knowledge for T/F/NG', 'Answers must come from the passage only; personal knowledge will mislead you.'],
-      ['Spending too long on one question', 'Allocate roughly 90 seconds per question; flag and move on if stuck.'],
-      ['Copying large chunks of text', 'Word-limit answers must be taken verbatim but kept within the limit.'],
-      ['Confusing FALSE with NOT GIVEN', 'FALSE = the passage directly contradicts the statement; NOT GIVEN = the passage is silent on it.'],
-    ],
-    resources: [
-      ['Cambridge IELTS Books 1–18', 'Official Practice', 'Essential'],
-      ['IELTS Advantage Reading Skills', 'Textbook', 'Recommended'],
-      ['Academic Word List (Coxhead)', 'Free Online', 'Essential'],
-      ['The Guardian / BBC News', 'Daily Reading', 'Supplementary'],
-      ['IELTS Ready Premium (British Council)', 'Online Course', 'Premium'],
-    ],
-  },
+/* ── IELTS Reading ── */
+'IELTS:reading':[
+  {q:'According to the passage, the main reason urban trees improve mental health is:',context:'Passage extract: "Studies conducted across 20 cities found that residents living within 300 metres of urban green spaces reported 18% lower rates of anxiety. Researchers attribute this primarily to the restorative effect of natural visual stimuli rather than increased physical activity."',options:['A. They encourage people to exercise more','B. Visual exposure to natural environments reduces anxiety','C. Trees reduce noise pollution','D. Green spaces provide community meeting points'],answer:1,tip:'The answer paraphrases "restorative effect of natural visual stimuli" — never copy the exact phrase.',category:'Reading — Passage 1'},
+  {q:'The phrase "restorative effect" in the passage most closely means:',context:'Same passage on urban trees and mental health.',options:['A. A process that repairs or renews wellbeing','B. An effect that requires medical treatment','C. A benefit that only applies to children','D. A visual illusion created by greenery'],answer:0,tip:'Vocabulary-in-context: substitute each option back into the sentence and check coherence.',category:'Reading — Vocabulary'},
+  {q:'TRUE, FALSE, or NOT GIVEN: The study examined cities across every continent.',context:'"Studies conducted across 20 cities found that residents living within 300 metres of urban green spaces…" No information about which continents the cities were in is given.',options:['A. TRUE','B. FALSE','C. NOT GIVEN'],answer:2,tip:'NOT GIVEN means the text neither confirms nor denies it — resist using outside knowledge.',category:'Reading — T/F/NG'},
+  {q:'Which paragraph contains information about the economic cost of biodiversity loss?',context:'A 4-paragraph academic article on biodiversity. Para A: definitions. Para B: causes. Para C: economic costs. Para D: policy responses.',options:['A. Paragraph A','B. Paragraph B','C. Paragraph C','D. Paragraph D'],answer:2,tip:'Matching information: scan each paragraph for the specific topic keyword, not just related words.',category:'Reading — Matching'},
+  {q:'The writer\'s main purpose in the final paragraph is to:',context:'Final paragraph: "Despite the complexity of the challenge, coordinated policy action has proven effective before — as the Montreal Protocol demonstrates. There is no reason why the same resolve cannot be applied to biodiversity."',options:['A. Summarise the causes of biodiversity loss','B. Criticise existing environmental policy','C. Argue that successful past action supports future optimism','D. Propose a specific new international treaty'],answer:2,tip:'Author purpose questions: look for the overall rhetorical goal, not specific content.',category:'Reading — Purpose'},
+  {q:'Complete the sentence: The Montreal Protocol is used by the writer as an example of ______.',context:'Same passage final paragraph as above.',options:['A. a failed climate agreement','B. successful coordinated international action','C. the economic cost of environmental regulation','D. a policy that only benefited wealthy nations'],answer:1,tip:'The example is used to support the argument that collective action works.',category:'Reading — Sentence Completion'},
+  {q:'According to the passage, renewable energy investment grew fastest in:',context:'"Solar installation rates tripled in South-East Asia between 2018 and 2023, outpacing growth in Europe and North America. Sub-Saharan Africa showed the most rapid percentage increase from a lower base."',options:['A. Europe','B. North America','C. South-East Asia','D. Sub-Saharan Africa'],answer:2,tip:'Absolute growth vs. percentage growth — the question asks about fastest growth rate, not largest total.',category:'Reading — Detail'},
+  {q:'The phrase "from a lower base" implies that Sub-Saharan Africa:',context:'Same extract on renewable energy growth.',options:['A. Had less investment than other regions in absolute terms','B. Had faster growth than South-East Asia','C. Received international aid for energy projects','D. Is the global leader in solar capacity'],answer:0,tip:'"From a lower base" means starting with a smaller absolute number, so large % gains are easier to achieve.',category:'Reading — Inference'},
+],
 
-  'IELTS:writing': {
-    overview: [
-      'Task 1 — Describe a graph, chart, diagram, or process in at least 150 words',
-      'Task 2 — Write a discursive essay responding to a viewpoint or argument in at least 250 words',
-      'Scoring — Coherence & Cohesion, Lexical Resource, Grammar Accuracy, Task Achievement each 25%',
-      '60 minutes total — recommend spending 20 min on Task 1 and 40 min on Task 2',
-    ],
-    questionTypes: [
-      ['Bar/Line/Pie Chart (T1)', 'Describe and compare data trends over time or between categories', 'Medium', 'Open with an overview of the main trend; group data logically; use precise comparison language'],
-      ['Process Diagram (T1)', 'Describe a sequence of stages or a cycle', 'Medium', 'Use passive voice and sequencing words (first, then, subsequently, finally)'],
-      ['Opinion Essay (T2)', 'Give your own view and support it with reasons and examples', 'Hard', 'State position clearly in the introduction; each body paragraph one main idea with evidence'],
-      ['Discussion Essay (T2)', 'Present both sides of an issue and reach a balanced conclusion', 'Hard', 'Avoid personal bias in presenting opposing views; conclude with your own reasoned stance'],
-      ['Problem-Solution Essay (T2)', 'Identify problems and propose solutions', 'Medium', 'Link each problem to a specific, realistic solution; signal clearly with discourse markers'],
-    ],
-    strategies: [
-      ['Daily Writing Practice', '30–45 min/day', ['Write one Task 1 or Task 2 every day', 'Time yourself strictly', 'Ask a teacher or peer to review for band-scoring criteria']],
-      ['Vocabulary Expansion', '4 times/week', ['Learn academic collocations and discourse markers', 'Avoid repeating the same words — practise synonyms', 'Study high-scoring sample essays for phrase patterns']],
-      ['Structure Drilling', '3 times/week', ['Memorise introduction and conclusion templates', 'Practise topic sentences that preview paragraph content', 'Use cohesion devices (however, furthermore, in contrast) consciously']],
-    ],
-    timeTips: [
-      ['Budget Time Firmly', 'Spend 20 min on Task 1 and 40 min on Task 2 — Task 2 is worth twice as much.'],
-      ['Plan Before Writing', 'Use 3–5 minutes to outline main ideas; writing without a plan leads to repetition.'],
-      ['Leave Time to Proofread', 'Reserve the last 3–5 minutes for grammar and spelling checks.'],
-      ['Word Count Discipline', 'Count approximate words at the halfway point; under 250 words for Task 2 costs marks on Task Achievement.'],
-    ],
-    mistakes: [
-      ['Describing every data point in Task 1', 'Select and group key trends; do not list every single number.'],
-      ['Forgetting an overview in Task 1', 'The overview (main trend summary) is essential for a Band 7+ score.'],
-      ['Going off-topic in Task 2', 'Re-read the prompt after each paragraph to ensure every sentence is relevant.'],
-      ['Simple or repetitive grammar', 'Deliberately use a range of sentence structures: complex, compound, passive, conditionals.'],
-      ['Informal language', 'Avoid contractions (don\'t → do not), slang, and first-person storytelling unless the prompt requires it.'],
-    ],
-    resources: [
-      ['Cambridge IELTS Books 1–18 (Writing Tasks)', 'Official Practice', 'Essential'],
-      ['IELTS Simon Writing Lessons', 'Free Website', 'Essential'],
-      ['E2 IELTS Writing Masterclass', 'YouTube', 'Recommended'],
-      ['Academic Collocations List', 'Free PDF', 'Supplementary'],
-      ['Magoosh IELTS Writing Guide', 'Online', 'Recommended'],
-    ],
-  },
+/* ── IELTS Writing ── */
+'IELTS:writing':[
+  {q:'In Task 1, you should always include:',context:'IELTS Academic Writing Task 1 asks you to describe a visual data source (graph, chart, table, or diagram) in at least 150 words.',options:['A. Your personal opinion about the data','B. An overview of the main trend or key feature','C. A prediction of future trends','D. A comparison with data from other countries'],answer:1,tip:'The overview (main trend summary) is essential for Band 7+. Without it you cannot exceed Band 5.',category:'Writing — Task 1'},
+  {q:'Which sentence best opens a Task 1 response for a bar chart showing internet usage by age group?',context:'The bar chart shows the percentage of adults using the internet daily in 2023, broken down by five age groups.',options:['A. "The bar chart is about internet usage."','B. "This essay will describe the bar chart."','C. "The bar chart illustrates the proportion of adults who used the internet daily in 2023, categorised by age group."','D. "Internet usage is very important in modern life as shown by the data."'],answer:2,tip:'Open with a paraphrase of the task prompt — never copy it word-for-word, and avoid "This essay will…" for Task 1.',category:'Writing — Task 1'},
+  {q:'In Task 2, the instruction "Discuss both views and give your own opinion" requires:',context:'IELTS Academic Writing Task 2 essay types include: opinion, discussion, problem-solution, and two-part question.',options:['A. Presenting only your own viewpoint in detail','B. Describing a problem and proposing two solutions','C. Presenting both sides of an argument AND stating your personal position','D. Writing a balanced report without any personal stance'],answer:2,tip:'Discussion essays must cover BOTH sides AND include your opinion — missing either costs Task Response marks.',category:'Writing — Task 2'},
+  {q:'Which of the following is the best topic sentence for a body paragraph arguing that public transport reduces urban congestion?',context:'Task 2 prompt: "Some people believe private car use should be restricted in cities. Others disagree. Discuss both views and give your own opinion."',options:['A. "There are many reasons why transport is important."','B. "Expanding public transport infrastructure is the most effective way to ease urban traffic congestion."','C. "People use cars for many different reasons."','D. "This paragraph will discuss public transport."'],answer:1,tip:'A topic sentence states the paragraph\'s main argument clearly. Vague openers like "There are many reasons…" reduce coherence scores.',category:'Writing — Task 2'},
+  {q:'Which word best fills the blank: "The proportion of elderly users was significantly higher; ______, younger users showed the lowest uptake."',context:'Selecting an appropriate discourse marker for a Task 1 response.',options:['A. Furthermore','B. In addition','C. By contrast','D. As a result'],answer:2,tip:'"By contrast" signals opposition between two data points — essential for comparing groups in Task 1.',category:'Writing — Cohesion'},
+  {q:'A student writes: "Every country should ban cars because they cause pollution." This argument is weak because:',context:'Evaluating Task 2 argument quality.',options:['A. It uses the word "should"','B. It is too short','C. It makes an absolute claim without acknowledging complexity or providing evidence','D. It mentions only one cause of pollution'],answer:2,tip:'Strong Task 2 arguments are qualified and supported — avoid absolute words like "every", "always", "never" without evidence.',category:'Writing — Task 2'},
+  {q:'The recommended time split for Task 1 and Task 2 in the 60-minute writing test is:',context:'IELTS Writing time management.',options:['A. 30 minutes each','B. 20 minutes Task 1, 40 minutes Task 2','C. 40 minutes Task 1, 20 minutes Task 2','D. 15 minutes Task 1, 45 minutes Task 2'],answer:1,tip:'Task 2 is worth twice as many marks as Task 1, so allocate more time to it.',category:'Writing — Strategy'},
+  {q:'Which sentence demonstrates the best range of grammar for a high band score?',context:'Selecting among four writing samples.',options:['A. "Cars are bad. They pollute. We should use buses."','B. "Cars cause pollution and we should use buses instead."','C. "While private vehicles offer convenience, their contribution to urban air pollution has prompted many city planners to invest in public transport alternatives."','D. "Using buses is better than using cars for the environment."'],answer:2,tip:'Band 7+ requires a mix of complex, compound, and simple sentences — option C demonstrates this range.',category:'Writing — Grammar'},
+],
 
-  'IELTS:speaking': {
-    overview: [
-      'Part 1 — Introduction and interview; everyday topics such as home, work, hobbies (4–5 min)',
-      'Part 2 — Individual long turn; describe a topic from a cue card with 1 minute to prepare (3–4 min)',
-      'Part 3 — Two-way discussion; abstract questions related to the Part 2 topic (4–5 min)',
-      'Assessed on Fluency, Vocabulary, Grammar, and Pronunciation — all worth 25%',
-    ],
-    questionTypes: [
-      ['Part 1 Personal Questions', 'Short answers about familiar topics like hobbies, food, hometown', 'Easy', 'Answer directly, then extend with a reason or example; aim for 2–3 sentences per answer'],
-      ['Part 2 Long Turn', 'Speak for 1–2 minutes from a cue card prompt', 'Medium', 'Use your 1-minute preparation to jot 4–5 bullet points; cover all cue card points; do not memorise a script'],
-      ['Part 3 Abstract Discussion', 'Discuss broader societal or conceptual questions related to Part 2', 'Hard', 'Speculate, compare, and give reasoned opinions; use discourse markers to organise your ideas'],
-    ],
-    strategies: [
-      ['Daily Speaking Aloud', '20–30 min/day', ['Record yourself on your phone and listen back', 'Practise answering Part 1 topics from official topic lists', 'Shadow native speakers to improve rhythm and intonation']],
-      ['Vocabulary Range', '4 times/week', ['Learn topic-specific vocabulary for common themes: environment, technology, education', 'Avoid overusing "good", "nice", "very" — replace with precise alternatives', 'Use idioms and collocations naturally, not forced']],
-      ['Mock Interviews', 'Twice a week', ['Practice with a speaking partner or tutor', 'Time each part strictly (1–2 min Part 2)', 'Request feedback on fluency and pronunciation specifically']],
-    ],
-    timeTips: [
-      ['Use Your 1-Minute Prep', 'In Part 2, quickly write 4–5 keywords for each cue card bullet point — do not write full sentences.'],
-      ['Do Not Rush in Part 1', 'Take 1–2 seconds to formulate a full answer; rushing leads to short, incomplete responses.'],
-      ['Extend Naturally', 'If you run out of content in Part 2 before 1 minute, add a memory, a feeling, or why it mattered to you.'],
-      ['Correct Yourself Calmly', 'Self-correction is normal and does not penalise you — say "Actually, I mean…" and continue.'],
-    ],
-    mistakes: [
-      ['One-word or one-sentence answers in Part 1', 'Always extend with a reason or example: "I enjoy cooking because it helps me relax."'],
-      ['Memorising scripted answers', 'Examiners are trained to detect memorised responses; natural speech always scores higher.'],
-      ['Ignoring pronunciation', 'Speak clearly; use stress and intonation to show meaning, especially in Part 3.'],
-      ['Silence or hesitation fillers', 'Replace "um, uh" with "Well, that\'s an interesting question" or a thinking phrase.'],
-    ],
-    resources: [
-      ['IELTS Speaking Part 1/2/3 Topic Lists', 'Free PDF', 'Essential'],
-      ['E2 IELTS Speaking Full Test Videos', 'YouTube', 'Essential'],
-      ['TED Talks (shadowing practice)', 'Free Website', 'Recommended'],
-      ['IELTS Liz Speaking Tips', 'Free Website', 'Recommended'],
-      ['iTalki – Find a Tutor', 'Online Platform', 'Premium'],
-    ],
-  },
+/* ── IELTS Speaking ── */
+'IELTS:speaking':[
+  {q:'In Speaking Part 1, the examiner asks: "Do you enjoy cooking?" The best response is:',context:'IELTS Speaking Part 1 tests your ability to talk about familiar topics with fluency and natural language.',options:['A. "Yes."','B. "Yes, I do. I find cooking relaxing — especially when I try new recipes at the weekend."','C. "I think cooking is a very important skill that everyone should learn because it is healthy."','D. "Cooking is defined as the art of preparing food using heat."'],answer:1,tip:'Part 1 answers should be direct, extended with a reason or example, and natural — not a lecture or definition.',category:'Speaking — Part 1'},
+  {q:'You are given this Part 2 cue card: "Describe a book you enjoyed reading. You should say: what it was about, when you read it, and why you enjoyed it." The BEST use of your 1-minute preparation time is to:',context:'IELTS Speaking Part 2 — long turn. You have 1 minute to prepare before speaking for 1–2 minutes.',options:['A. Write a full script and memorise it','B. Write 4–5 keywords for each bullet point on the card','C. Read the cue card slowly three times','D. Think of a story completely unrelated to the prompt'],answer:1,tip:'Scripts sound memorised and score lower. Keywords give you a flexible structure to speak naturally.',category:'Speaking — Part 2'},
+  {q:'In Speaking Part 3, the examiner asks: "Do you think reading habits have changed in recent years?" A Band 7+ response would:',context:'Part 3 tests your ability to discuss abstract ideas, speculate, and justify opinions.',options:['A. Give a one-sentence answer: "Yes, they have changed a lot."','B. Agree with the examiner\'s implied view without justification','C. Speculate and justify: "I think reading habits have shifted considerably — digital screens have replaced physical books for many people, particularly younger generations, though I believe long-form reading still holds value for deep comprehension."','D. Say "I don\'t know" and wait for the next question'],answer:2,tip:'Part 3 rewards abstract thinking, hedging language ("I believe", "it seems that"), and reasoned opinions.',category:'Speaking — Part 3'},
+  {q:'Which response demonstrates the best fluency for Part 1?',context:'Examiner question: "What kind of music do you like?"',options:['A. "I like… um… I like pop music. Yes. Pop music."','B. "Well, I\'d say I\'m drawn to jazz and acoustic music — there\'s something about the improvisational quality that I find really engaging."','C. "Music is very good for the soul and has been part of human culture since ancient times."','D. "I do not understand this question."'],answer:1,tip:'Fluency means speaking smoothly with appropriate vocabulary — not speaking fast. Reduce filler sounds like "um".',category:'Speaking — Fluency'},
+  {q:'Which phrase is the most natural way to gain thinking time in Part 3?',context:'The examiner asks a complex abstract question you need a moment to consider.',options:['A. "Um, um, um, I don\'t know."','B. "Please repeat the question."','C. "That\'s an interesting question — let me think about that for a moment."','D. "I cannot answer this question."'],answer:2,tip:'Thinking-time phrases are natural and do not penalise you — they show communication skill.',category:'Speaking — Strategy'},
+  {q:'The IELTS Speaking band descriptors assess four criteria. Which is NOT one of them?',context:'Understanding the IELTS Speaking assessment criteria.',options:['A. Fluency and Coherence','B. Lexical Resource','C. Content Accuracy','D. Grammatical Range and Accuracy'],answer:2,tip:'The four criteria are: Fluency & Coherence, Lexical Resource, Grammatical Range & Accuracy, and Pronunciation. Content factual accuracy is not assessed.',category:'Speaking — Assessment'},
+],
 
-  /* ══════ TOEFL ══════ */
-  'TOEFL:reading': {
-    overview: [
-      '2 passages from academic texts on natural sciences, social sciences, or humanities',
-      'Each passage is approximately 700 words; 10 questions per passage',
-      'Question types test comprehension of detail, inference, vocabulary, and rhetorical purpose',
-      '35 minutes total — about 17–18 minutes per passage',
-    ],
-    questionTypes: [
-      ['Factual Information', 'Find explicitly stated facts in the passage', 'Easy', 'Scan for keywords from the question; the answer paraphrases the passage rather than quoting directly'],
-      ['Vocabulary in Context', 'Identify the meaning of a word or phrase as used in the passage', 'Medium', 'Re-read the surrounding sentences; substitute each option back in to check meaning fits'],
-      ['Inference', 'Determine what can be concluded from information in the passage', 'Hard', 'The correct answer is implied, not stated; eliminate options that go beyond the passage evidence'],
-      ['Sentence Simplification', 'Choose the sentence that has the same essential meaning as the highlighted sentence', 'Medium', 'Identify the core subject and predicate; ignore secondary details; the simplest accurate option wins'],
-      ['Prose Summary / Table Completion', 'Identify the major ideas that belong in a summary or a category table', 'Hard', 'Major ideas support the thesis; minor details, examples, or false claims are distractors'],
-    ],
-    strategies: [
-      ['Academic Reading Daily', '30 min/day', ['Read university-level articles in English', 'Annotate main ideas in each paragraph', 'Build academic vocabulary from context, not memorisation']],
-      ['Passage Mapping', '3–4 times/week', ['Briefly note the purpose of each paragraph in the margin', 'Identify thesis and supporting points before answering', 'Return to the correct section for evidence-based questions']],
-      ['Timed Full Sets', 'Weekly', ['Complete both passages in 35 minutes without pausing', 'Target 80% accuracy before the exam', 'Review wrong answers against the exact passage evidence']],
-    ],
-    timeTips: [
-      ['17 Minutes Per Passage', 'Strict pacing prevents running out of time on the more difficult second passage.'],
-      ['Skim Then Answer', 'Read the first sentence of each paragraph to map the text, then go question by question.'],
-      ['Prose Summary Last', 'Save the table/summary question for last — it requires holistic understanding of the passage.'],
-      ['Eliminate, Then Choose', 'Remove clearly wrong options first; the hardest questions often come down to two close options.'],
-    ],
-    mistakes: [
-      ['Reading every word before answering', 'Skim for structure; only re-read closely when a question requires it.'],
-      ['Using background knowledge', 'TOEFL Reading tests comprehension of the passage only; your prior knowledge can mislead you.'],
-      ['Rushing Prose Summary', 'Wrong options often contain accurate statements from the passage but are minor details, not major ideas.'],
-      ['Ignoring vocabulary questions', 'Vocabulary in Context questions are reliable score-boosters if you practise substitution.'],
-    ],
-    resources: [
-      ['Official TOEFL Prep (ETS)', 'Official Website', 'Essential'],
-      ['The Princeton Review TOEFL', 'Textbook', 'Recommended'],
-      ['Magoosh TOEFL Reading Guide', 'Online', 'Recommended'],
-      ['JSTOR / Scientific American', 'Free Reading', 'Supplementary'],
-      ['TOEFL Preparation — ETS Official Guide', 'Official Book', 'Essential'],
-    ],
-  },
+/* ── TOEFL Reading ── */
+'TOEFL:reading':[
+  {q:'The word "integral" in paragraph 2 is closest in meaning to:',context:'Passage extract (Paragraph 2): "Mycorrhizal fungi form an integral part of forest ecosystems, connecting root systems across hundreds of metres and facilitating nutrient transfer between trees."',options:['A. Temporary','B. Essential','C. Controversial','D. Visible'],answer:1,tip:'Vocabulary-in-context: replace the word with each option; "essential" preserves the meaning.',category:'TOEFL Reading — Vocabulary'},
+  {q:'According to paragraph 3, which of the following is true about mycorrhizal networks?',context:'Paragraph 3: "The networks preferentially channel carbon to younger, shaded seedlings, suggesting a degree of biological altruism previously unknown in plant science."',options:['A. They distribute carbon equally among all trees','B. They direct more resources to mature trees','C. They prioritise seedlings with limited light access','D. They are found only in tropical rainforests'],answer:2,tip:'Detail questions: locate the exact sentence in the passage before choosing.',category:'TOEFL Reading — Detail'},
+  {q:'Which sentence could best be added to the end of paragraph 4 to reinforce its main idea?',context:'Paragraph 4 argues that mycorrhizal networks are being disrupted by industrial agriculture. The paragraph ends with: "Soil compaction from heavy machinery destroys the delicate hyphal threads within weeks."',options:['A. "Farmers have used synthetic fertilisers since the early twentieth century."','B. "This physical destruction, combined with fungicide application, leaves replanted fields biologically impoverished."','C. "Scientists disagree about the precise depth at which fungal networks operate."','D. "Some fungi are beneficial while others cause plant disease."'],answer:1,tip:'The inserted sentence must reinforce AND logically connect to the final sentence of the paragraph.',category:'TOEFL Reading — Insert Sentence'},
+  {q:'The passage implies that trees sharing carbon through fungal networks could be described as:',context:'The full passage argues that trees cooperate via mycorrhizal networks in ways that resemble social behaviour.',options:['A. Competitive and resource-hoarding','B. Engaged in a form of cooperative resource distribution','C. Entirely dependent on external nutrient inputs','D. Unaffected by neighbouring species'],answer:1,tip:'Inference questions: the answer is not stated directly but is logically implied by the passage.',category:'TOEFL Reading — Inference'},
+  {q:'The author organises the passage primarily by:',context:'The passage covers: (1) definition of mycorrhizal fungi, (2) their functions, (3) the disruption caused by farming, (4) conservation proposals.',options:['A. Describing a problem, then proposing a solution, then evaluating outcomes','B. Presenting a phenomenon, explaining its functions, and discussing threats and responses','C. Comparing two opposing scientific theories','D. Narrating the historical discovery of mycorrhizal science'],answer:1,tip:'Organisation questions require you to identify the macro-structure of the passage, not specific details.',category:'TOEFL Reading — Organisation'},
+  {q:'According to the passage, which human activity poses the GREATEST threat to mycorrhizal networks?',context:'Paragraph 3: "Fungicide application eliminates up to 90% of fungal diversity." Paragraph 4: "Soil compaction destroys hyphal threads within weeks." Paragraph 5: "Monoculture reduces the number of compatible host plants."',options:['A. Monoculture farming','B. Soil compaction','C. Fungicide use','D. Crop rotation'],answer:2,tip:'The 90% statistic linked to fungicides is the most extreme figure, signalling the greatest threat.',category:'TOEFL Reading — Detail'},
+  {q:'The word "altruism" as used in the passage suggests that mycorrhizal carbon transfer:',context:'"…suggesting a degree of biological altruism previously unknown in plant science."',options:['A. Benefits the donor organism at the expense of the recipient','B. Benefits the recipient at a cost to the donor','C. Benefits neither party in the relationship','D. Is purely accidental and non-directional'],answer:1,tip:'"Altruism" means self-sacrificing behaviour for the benefit of another — apply this definition to the biological context.',category:'TOEFL Reading — Vocabulary'},
+  {q:'Which of the following best expresses the essential information in the highlighted sentence? "The networks preferentially channel carbon to younger, shaded seedlings, suggesting a degree of biological altruism previously unknown in plant science."',context:'Sentence simplification question.',options:['A. Mycorrhizal networks send carbon to mature trees in full sunlight','B. Mycorrhizal networks appear to sacrifice resources for the benefit of young seedlings in a way science had not previously identified','C. Carbon distribution in forests is random and not controlled by fungi','D. Shaded areas of forests receive no carbon from neighbouring trees'],answer:1,tip:'Sentence simplification: keep the core meaning (preferential carbon transfer to seedlings = novel form of altruism) and discard secondary detail.',category:'TOEFL Reading — Sentence Simplification'},
+],
 
-  'TOEFL:listening': {
-    overview: [
-      '2 lectures (3–5 min each) from academic contexts covering science, social science, arts, or humanities',
-      '2 conversations (1.5–2 min each) simulating university campus interactions',
-      '5–6 questions per lecture and 5 questions per conversation',
-      '36 minutes total — played once with no rewind',
-    ],
-    questionTypes: [
-      ['Gist-Content', 'Identify the main topic or central idea of the lecture or conversation', 'Easy', 'Predict from the introduction what the lecture is about; verify throughout'],
-      ['Detail Questions', 'Find specific facts, statistics, or details mentioned in the audio', 'Medium', 'Note-taking is essential; listen for signpost phrases like "importantly" or "in other words"'],
-      ['Function / Purpose', 'Determine why the speaker says a particular sentence or phrase', 'Hard', 'Focus on tone, context, and discourse function — not just literal meaning'],
-      ['Organization', 'Identify how information is structured or why the professor chose an approach', 'Hard', 'Listen for transitions; the professor may compare theories, give examples, or contrast ideas'],
-      ['Connecting Content', 'Match facts to categories or complete a table from the lecture', 'Medium', 'Note keywords per category during listening; answers follow the order of the audio'],
-    ],
-    strategies: [
-      ['Active Note-Taking', 'Every practice session', ['Use shorthand and symbols to capture key points', 'Note relationships: cause/effect, compare/contrast, sequence', 'Review notes immediately after to fill gaps from memory']],
-      ['Lecture Immersion', '30 min/day', ['Watch academic lectures on YouTube (TED-Ed, MIT OpenCourseWare)', 'Summarise the main point in 2–3 sentences after each lecture', 'Practise identifying when a professor shifts topics']],
-      ['Full Practice Tests', 'Weekly', ['Use ETS official materials with real audio quality', 'Practice using scratch paper for notes', 'Score immediately and review every wrong answer with the audio transcript']],
-    ],
-    timeTips: [
-      ['Take Notes Immediately', 'Start writing from the very first sentence — the intro always contains the main topic.'],
-      ['Focus on Relationships', 'Note cause-effect, compare-contrast, and sequence — these drive the harder questions.'],
-      ['Do Not Transcribe', 'Write key ideas, not every word; you need to listen and understand, not write everything.'],
-      ['Use Process of Elimination', 'For function and attitude questions, eliminate extreme or unsupported answer choices first.'],
-    ],
-    mistakes: [
-      ['Not taking notes', 'Everything is played once only; notes are your memory backup.'],
-      ['Focusing only on facts', 'Function and attitude questions test your understanding of why, not just what.'],
-      ['Missing transitions', 'Phrases like "however", "on the other hand", "for example" signal new content — note them.'],
-      ['Panicking when vocabulary is unknown', 'Context and overall structure give enough meaning; focus on the big picture.'],
-    ],
-    resources: [
-      ['ETS Official TOEFL Practice Tests', 'Official Platform', 'Essential'],
-      ['Magoosh TOEFL Listening Lessons', 'Online', 'Recommended'],
-      ['MIT OpenCourseWare Lectures', 'Free Video', 'Supplementary'],
-      ['TED-Ed (academic topics)', 'Free Video', 'Supplementary'],
-      ['NoteFull TOEFL Mastery', 'Online Course', 'Recommended'],
-    ],
-  },
+/* ── TOEFL Listening ── */
+'TOEFL:listening':[
+  {q:'What is the main topic of the lecture?',context:'You would hear: A professor discusses how bioluminescence evolved independently in multiple marine species and its ecological functions.',options:['A. The chemical structure of luciferin molecules','B. The independent evolution and ecological roles of bioluminescence in marine organisms','C. How deep-sea fishing disturbs bioluminescent species','D. The history of bioluminescence research since 1900'],answer:1,tip:'Gist-content: the main topic is established in the first 30 seconds — note it immediately.',category:'TOEFL Listening — Lecture'},
+  {q:'Why does the professor mention the anglerfish?',context:'The professor says: "Take the anglerfish — its bioluminescent lure is a textbook example of predation by deception, demonstrating how the trait has been co-opted for hunting rather than communication."',options:['A. To show that anglerfish are endangered','B. As an example of bioluminescence used for predatory deception','C. To contrast it with non-bioluminescent deep-sea fish','D. To introduce the concept of counter-illumination'],answer:1,tip:'Purpose questions: the professor uses examples to illustrate a point — identify what idea the example supports.',category:'TOEFL Listening — Purpose'},
+  {q:'What does the professor imply about convergent evolution?',context:'Professor: "The fact that bioluminescence has evolved at least 40 separate times strongly supports convergent evolution — similar selective pressures producing similar traits independently."',options:['A. It is a disputed theory with little evidence','B. It explains why unrelated species can develop the same adaptation when facing similar environments','C. It only applies to deep-sea organisms','D. It requires direct genetic transfer between species'],answer:1,tip:'Inference: "strongly supports" + 40 separate occurrences implies convergent evolution is well-evidenced here.',category:'TOEFL Listening — Inference'},
+  {q:'In the conversation, why does the student visit the professor\'s office?',context:'Campus conversation: A student asks a professor about an assignment extension due to a family emergency.',options:['A. To submit a completed assignment','B. To request extra credit work','C. To ask for an extension on an assignment due to a personal emergency','D. To complain about the assignment instructions'],answer:2,tip:'Campus conversations establish the student\'s purpose in the first two exchanges — note it immediately.',category:'TOEFL Listening — Conversation'},
+  {q:'What does the professor suggest the student do FIRST?',context:'Professor: "Before I can grant any extension, you\'ll need to email the dean\'s office with documentation. Once I receive confirmation from them, I can adjust the deadline in the system."',options:['A. Submit a partial assignment','B. Contact the dean\'s office and provide documentation','C. Speak with classmates about the assignment','D. Wait until the semester ends'],answer:1,tip:'"First" questions: listen for sequence words — "before", "first", "once", "then".',category:'TOEFL Listening — Detail'},
+  {q:'What point does the professor make about counter-illumination?',context:'Professor: "Some squid species match the faint light filtering down from above using photophores on their undersides — this counter-illumination effectively eliminates their shadow, making them invisible to predators below."',options:['A. It is used by fish to attract prey','B. It helps prey species avoid detection by eliminating their silhouette','C. It only works in shallow water','D. It is the same mechanism used by the anglerfish'],answer:1,tip:'Counter-illumination = camouflage from below; the key phrase is "eliminates their shadow".',category:'TOEFL Listening — Detail'},
+  {q:'How does the professor feel about the 40+ independent evolutions of bioluminescence?',context:'Professor: "What I find remarkable — and I mean truly astonishing — is that nature has arrived at this same solution over forty separate times. It\'s a powerful testament to how strong the selective pressure must be."',options:['A. Sceptical — she doubts the accuracy of the count','B. Indifferent — she considers it an ordinary finding','C. Impressed — she views it as remarkable evidence of strong natural selection','D. Concerned — she worries about how this affects conservation'],answer:2,tip:'Attitude/feeling: listen to tone and evaluative words — "remarkable", "truly astonishing", "powerful testament".',category:'TOEFL Listening — Attitude'},
+],
 
-  'TOEFL:speaking': {
-    overview: [
-      'Task 1 — Independent: Express and support your own opinion on a familiar topic (45 sec to speak)',
-      'Task 2 — Campus situation: Read a notice + listen to a conversation, then summarise (60 sec)',
-      'Task 3 — Academic course: Read a short text + listen to a lecture, then summarise (60 sec)',
-      'Task 4 — Academic lecture: Listen to a lecture, then explain the concepts discussed (60 sec)',
-    ],
-    questionTypes: [
-      ['Independent Opinion (T1)', 'State a preference or opinion and support it with reasons and examples', 'Medium', 'Use the template: State → Reason 1 + Example → Reason 2 → Brief conclusion; prepare in 15 seconds'],
-      ['Integrated Campus (T2)', 'Summarise the student\'s opinion and the reasons from the conversation', 'Medium', 'Note the main point of the announcement + both reasons the student supports or opposes it'],
-      ['Integrated Academic (T3)', 'Explain the concept from the reading using the lecture examples', 'Hard', 'Identify the definition from the reading; map lecture examples to that definition clearly'],
-      ['Lecture Summary (T4)', 'Explain the key points and examples from the lecture', 'Hard', 'Take notes on 2–3 main points during the lecture; report them clearly in your response'],
-    ],
-    strategies: [
-      ['Template Drilling', '20 min/day', ['Memorise a flexible template for each of the 4 tasks', 'Practice delivering each template aloud within the time limit', 'Record and listen back for filler words and pacing']],
-      ['Note-Taking for Integrated Tasks', '3 times/week', ['Practise summarising a 90-second audio in 5–6 bullet points', 'Focus on the main idea and 2 supporting points', 'Check that your spoken summary uses different words from your notes']],
-      ['Fluency Conditioning', 'Daily', ['Read English text aloud for 10 minutes', 'Practise speaking at a measured pace — not too fast or slow', 'Reduce filler words (um, uh) by pausing briefly instead']],
-    ],
-    timeTips: [
-      ['Use Prep Time Fully', 'For Task 1 you have 15 seconds — decide your opinion and two reasons immediately; do not change mid-speech.'],
-      ['Pace Yourself', '60 seconds is longer than it feels; speak clearly rather than racing to fill every second.'],
-      ['Prioritise Main Points', 'If running out of time, complete the main idea rather than trailing off mid-sentence on a detail.'],
-      ['Notes = Confidence', 'For integrated tasks, having bullet-point notes in front of you prevents hesitation and repetition.'],
-    ],
-    mistakes: [
-      ['Not having a clear structure', 'Examiners score delivery and organisation; rambling without structure costs points.'],
-      ['Memorising a scripted essay', 'Scripts sound unnatural; use flexible templates that you can adapt to any prompt.'],
-      ['Exceeding or significantly underusing the time', 'Fill most of the time — very short responses signal you ran out of ideas.'],
-      ['Ignoring the reading passage in T3', 'The reading provides the concept definition; your lecture examples must tie back to it.'],
-    ],
-    resources: [
-      ['ETS TOEFL Speaking Practice Sets', 'Official Platform', 'Essential'],
-      ['NoteFull Speaking Templates', 'Online Course', 'Recommended'],
-      ['Magoosh TOEFL Speaking Guide', 'Online', 'Recommended'],
-      ['iTalki English Tutors', 'Online Platform', 'Premium'],
-      ['TOEFL Speaking with Mike', 'YouTube', 'Supplementary'],
-    ],
-  },
+/* ── SAT Reading & Writing ── */
+'SAT:reading-writing':[
+  {q:'Which choice completes the text with the most logical and precise word?',context:'Text: "The architect\'s design was praised not merely for its aesthetic appeal but for its remarkable ______ — every structural element served multiple functional purposes simultaneously."',options:['A. simplicity','B. ingenuity','C. familiarity','D. symmetry'],answer:1,tip:'Words in Context: "multiple functional purposes" points to clever, inventive design → ingenuity.',category:'SAT — Words in Context'},
+  {q:'Which choice most effectively uses data from the table to complete the example?',context:'A student is writing about urban heat islands. The table shows average temperatures (°C): City centre 32.4, Suburban area 29.1, Rural area 26.8. Text: "The urban heat island effect is substantial — city centres can be ______ than surrounding rural areas."',options:['A. slightly warmer','B. up to 5.6°C warmer','C. cooler in summer','D. approximately 3°C cooler'],answer:1,tip:'Quantitative evidence: calculate 32.4 − 26.8 = 5.6°C and match the claim precisely.',category:'SAT — Command of Evidence (Quantitative)'},
+  {q:'Which quotation from the passage most effectively supports the claim that Harriet Tubman showed exceptional strategic thinking?',context:'Claim: "Tubman\'s success as a conductor on the Underground Railroad was due in part to her strategic planning." Passage excerpts available.',options:['A. "Tubman was born into slavery in Maryland around 1822."','B. "She chose to travel on Saturday nights, knowing that slave notices could not be published until Monday, buying critical time."','C. "Tubman later served as a spy for the Union Army during the Civil War."','D. "Her childhood nickname was Minty."'],answer:1,tip:'Evidence must directly prove the claim. Only option B shows a specific strategy she used.',category:'SAT — Command of Evidence (Textual)'},
+  {q:'A student wants to add a sentence emphasising the environmental cost of fast fashion. Which sentence most effectively does this?',context:'Paragraph about global clothing consumption trends.',options:['A. "Fashion trends change every season."','B. "Many consumers enjoy shopping for new clothes."','C. "The fashion industry produces an estimated 92 million tonnes of textile waste annually, making it one of the world\'s most polluting sectors."','D. "Designers often draw inspiration from historical styles."'],answer:2,tip:'The task specifies "environmental cost" — only option C provides a specific environmental statistic.',category:'SAT — Rhetorical Synthesis'},
+  {q:'Which choice correctly uses a semicolon?',context:'Selecting the grammatically correct option.',options:['A. "The experiment failed; however the team learned valuable lessons."','B. "The experiment failed; however, the team learned valuable lessons."','C. "The experiment failed, however; the team learned valuable lessons."','D. "The experiment failed however; the team learned valuable lessons."'],answer:1,tip:'Conjunctive adverbs (however, therefore, moreover) after a semicolon need a comma after them: "; however,"',category:'SAT — Grammar & Mechanics'},
+  {q:'Which transition best connects these two sentences? "The new medication reduced inflammation effectively. ______ patients reported significant side effects in the first week."',context:'Transition word selection.',options:['A. Furthermore,','B. As a result,','C. Nevertheless,','D. Similarly,'],answer:2,tip:'"Nevertheless" signals contrast — effectiveness despite side effects. "As a result" would mean side effects were caused by effectiveness, which contradicts the logic.',category:'SAT — Transitions'},
+  {q:'Which revision of the underlined portion best improves sentence clarity?',context:'Original: "The committee, after reviewing all submitted proposals for the redesign of the city\'s aging public transport network, made a decision to approve two of them." Underlined: "made a decision to approve two of them"',options:['A. made a decision that two would be approved','B. approved two proposals','C. decided that two of the submitted proposals would receive approval','D. No change'],answer:1,tip:'Concision: "approved two proposals" removes wordiness without losing meaning — preferred in SAT Writing.',category:'SAT — Concision'},
+  {q:'The main purpose of the introductory paragraph of a personal essay beginning with an anecdote is typically to:',context:'Rhetorical analysis of essay structure.',options:['A. Define all key terms used in the essay','B. Provide statistical evidence for the essay\'s thesis','C. Engage the reader and introduce the essay\'s central theme through a specific scene','D. Summarise the essay\'s conclusion in advance'],answer:2,tip:'Anecdotes open with a specific scene to hook the reader and establish theme — not definitions or statistics.',category:'SAT — Rhetoric'},
+],
 
-  'TOEFL:writing': {
-    overview: [
-      'Task 1 (Integrated) — Read a passage, listen to a lecture, then write a 150–225 word summary explaining how the lecture challenges the reading (20 min)',
-      'Task 2 (Academic Discussion) — Read a professor\'s question + two students\' responses, then write your own contribution in at least 100 words (10 min)',
-      'Scored on development, coherence, accuracy, and language use',
-      'Type at keyboard — TOEFL iBT is entirely computer-based',
-    ],
-    questionTypes: [
-      ['Integrated Writing (T1)', 'Summarise how the lecture casts doubt on or refutes the reading passage\'s points', 'Hard', 'Identify 3 key points from the reading; map the lecture\'s counter-argument to each; do not state your own opinion'],
-      ['Academic Discussion (T2)', 'Add a new perspective or extend the discussion, supported by specific reasons and examples', 'Medium', 'Make one clear claim; support it with a concrete example or reasoning; acknowledge or engage with the other students\' ideas'],
-    ],
-    strategies: [
-      ['Integrated Practice', 'Daily', ['Read a short article, then listen to a contrasting lecture on the same topic', 'Write a 200-word summary without looking back at the reading', 'Check that each lecture point is clearly tied to a reading point']],
-      ['Academic Discussion Drills', '3 times/week', ['Practice writing 100+ words in under 8 minutes', 'Vary your sentence structures deliberately', 'Include a specific example or hypothetical scenario to add depth']],
-      ['Keyboard Fluency', 'Daily', ['Type your practice responses (do not handwrite)', 'Learn keyboard shortcuts for editing quickly', 'Monitor typing speed — 40 WPM or faster is comfortable for TOEFL timing']],
-    ],
-    timeTips: [
-      ['Integrated: Outline First', 'Spend 2 minutes noting the 3 reading points and the lecture\'s counter to each before writing.'],
-      ['Discussion: Start Writing Immediately', 'With only 10 minutes, write your opening sentence in the first 30 seconds; plan minimally.'],
-      ['Do Not Repeat the Reading Wholesale', 'Paraphrase both the reading and the lecture points — direct copying does not demonstrate language ability.'],
-      ['Proof-Read Quickly', 'Save 1–2 minutes at the end to fix obvious grammar and spelling errors.'],
-    ],
-    mistakes: [
-      ['Including your opinion in Integrated Writing', 'Task 1 asks you to report the lecture\'s argument, not evaluate it.'],
-      ['Writing less than 150 words in Task 1', 'Below 150 words signals an incomplete response; aim for 180–225.'],
-      ['Repeating others\' ideas in Task 2', 'You must add something new; simply restating what the professor or another student said scores lower.'],
-      ['Inconsistent grammar', 'A variety of sentence structures scores higher than consistently simple sentences.'],
-    ],
-    resources: [
-      ['ETS Official TOEFL Writing Samples', 'Official PDF', 'Essential'],
-      ['Magoosh TOEFL Writing Guide', 'Online', 'Recommended'],
-      ['Grammarly (grammar check)', 'Free Tool', 'Supplementary'],
-      ['Academic Phrasebank (Manchester)', 'Free Website', 'Recommended'],
-      ['NoteFull Integrated Writing Templates', 'Online Course', 'Recommended'],
-    ],
-  },
+/* ── SAT Math ── */
+'SAT:math':[
+  {q:'If 3x + 7 = 22, what is the value of x?',context:'',options:['A. 3','B. 5','C. 7','D. 9'],answer:1,tip:'Solve step by step: 3x = 22 − 7 = 15, so x = 5.',category:'SAT Math — Algebra'},
+  {q:'A line passes through the points (2, 5) and (6, 13). What is the slope of the line?',context:'',options:['A. 1','B. 1.5','C. 2','D. 3'],answer:2,tip:'Slope = (y₂ − y₁)/(x₂ − x₁) = (13 − 5)/(6 − 2) = 8/4 = 2.',category:'SAT Math — Linear Equations'},
+  {q:'The equation y = −2x² + 8x − 3 represents a parabola. What is the x-coordinate of the vertex?',context:'',options:['A. −2','B. 2','C. 4','D. 8'],answer:1,tip:'Vertex x-coordinate = −b/(2a) = −8/(2×−2) = −8/−4 = 2.',category:'SAT Math — Quadratic'},
+  {q:'A store reduces a $80 jacket by 25%. What is the sale price?',context:'',options:['A. $20','B. $55','C. $60','D. $65'],answer:2,tip:'25% of $80 = $20 discount. $80 − $20 = $60.',category:'SAT Math — Percentages'},
+  {q:'In a data set of 7 values — 3, 7, 8, 9, 10, 12, 15 — what is the median?',context:'',options:['A. 8','B. 9','C. 10','D. 12'],answer:1,tip:'The median of 7 ordered values is the 4th value: 3, 7, 8, [9], 10, 12, 15 → 9.',category:'SAT Math — Statistics'},
+  {q:'A right triangle has legs of length 6 and 8. What is the length of the hypotenuse?',context:'',options:['A. 9','B. 10','C. 12','D. 14'],answer:1,tip:'Pythagorean theorem: c² = 6² + 8² = 36 + 64 = 100, so c = 10.',category:'SAT Math — Geometry'},
+  {q:'If f(x) = 2x² − 3x + 1, what is f(3)?',context:'',options:['A. 8','B. 10','C. 12','D. 16'],answer:1,tip:'f(3) = 2(9) − 3(3) + 1 = 18 − 9 + 1 = 10.',category:'SAT Math — Functions'},
+  {q:'A recipe requires a ratio of flour to sugar of 3:1. If a baker uses 12 cups of flour, how many cups of sugar are needed?',context:'',options:['A. 2','B. 3','C. 4','D. 6'],answer:2,tip:'Ratio 3:1 → sugar = flour ÷ 3 = 12 ÷ 3 = 4 cups.',category:'SAT Math — Ratios'},
+],
 
-  /* ══════ SAT ══════ */
-  'SAT:reading-writing': {
-    overview: [
-      'Module 1 — 27 questions covering reading comprehension, vocabulary in context, and writing conventions (32 min)',
-      'Module 2 — 27 questions; difficulty adapts based on Module 1 performance (32 min)',
-      'Passages are short (25–150 words) drawn from literature, history, social science, and science',
-      'Writing questions test grammar, punctuation, transitions, and sentence structure',
-    ],
-    questionTypes: [
-      ['Words in Context', 'Select the word or phrase that best completes a sentence or maintains the passage\'s meaning', 'Medium', 'Consider tone, register, and the surrounding context; eliminate words that change the intended meaning'],
-      ['Text Structure & Purpose', 'Identify the overall function of a text or a specific sentence within it', 'Medium', 'Ask: why did the author write this sentence? (to illustrate, to contrast, to argue, to describe)'],
-      ['Command of Evidence (Textual)', 'Choose the quotation that best supports a given claim or conclusion', 'Hard', 'The evidence must directly prove the statement — good quotes don\'t just relate to the topic'],
-      ['Command of Evidence (Quantitative)', 'Use data from a graph or table to support or undermine a conclusion', 'Hard', 'Read the graph labels carefully; the correct answer accurately represents the data and supports the claim'],
-      ['Grammar & Mechanics', 'Fix errors in sentence boundaries, punctuation, pronoun agreement, and verb tense', 'Medium', 'Read the full sentence aloud in your head; the choice that sounds natural and obeys the rule is correct'],
-    ],
-    strategies: [
-      ['Daily Short Passage Reading', '20–30 min/day', ['Read short literary and science articles', 'Identify the author\'s purpose and tone', 'Practise vocabulary-in-context by removing the target word and predicting it']],
-      ['Grammar Rule Review', '3 times/week', ['Study comma rules, semicolons, colons, and dashes', 'Learn pronoun case (who/whom) and subject-verb agreement', 'Practise fixing errors by identifying the grammatical function of each word']],
-      ['Timed Module Practice', 'Weekly', ['Complete one full 27-question module in 32 minutes', 'Score and categorise errors by question type', 'Target your weakest category in the next practice session']],
-    ],
-    timeTips: [
-      ['71 Seconds Per Question', 'Each module gives roughly 71 seconds per question; move on if you are stuck — return if time allows.'],
-      ['Read the Passage, Then Question', 'For reading questions, read the full short passage first; for grammar, jump straight to the underlined portion.'],
-      ['Transitions Signal Structure', 'When choosing a transition word, identify the logical relationship (contrast, cause, addition, example) between sentences.'],
-      ['Verify Grammar Answers', 'After selecting a grammar fix, re-read the full sentence with your answer inserted to confirm it sounds correct.'],
-    ],
-    mistakes: [
-      ['Choosing answers that sound good but change the meaning', 'Select the option that preserves the original meaning while correcting the error.'],
-      ['Ignoring the passage for vocabulary questions', 'Words in Context requires the passage context — do not select the most common definition out of habit.'],
-      ['Over-thinking evidence questions', 'The correct evidence quote must directly prove the given statement — not just relate to it tangentially.'],
-      ['Rushing through grammar questions', 'Grammar questions are fast points if you know the rules; read carefully to spot the actual error.'],
-    ],
-    resources: [
-      ['Khan Academy Official SAT Practice', 'Free Online', 'Essential'],
-      ['College Board Official SAT Practice Tests', 'Official PDF', 'Essential'],
-      ['PrepScholar SAT Reading Guide', 'Online', 'Recommended'],
-      ['The Princeton Review SAT Prep', 'Textbook', 'Recommended'],
-      ['Erica Meltzer\'s The Critical Reader', 'Textbook', 'Premium'],
-    ],
-  },
+/* ── HSK 1-2 ── */
+'HSK:hsk-1-2':[
+  {q:'Which sentence correctly expresses "I like drinking tea" in Chinese?',context:'HSK 1–2 tests basic sentence construction with the 300 core vocabulary words.',options:['A. 我喜欢喝茶。(Wǒ xǐhuān hē chá.)','B. 我喜欢茶喝。(Wǒ xǐhuān chá hē.)','C. 喝茶我喜欢。(Hē chá wǒ xǐhuān.)','D. 我茶喜欢喝。(Wǒ chá xǐhuān hē.)'],answer:0,tip:'Standard Mandarin word order: Subject + Verb + Object. 我(I) + 喜欢(like) + 喝茶(drink tea).',category:'HSK 1–2 — Grammar'},
+  {q:'What does "多少钱？" (Duōshao qián?) mean?',context:'Common everyday phrase.',options:['A. Where is it?','B. How much does it cost?','C. What time is it?','D. How many people?'],answer:1,tip:'多少 = how much/many, 钱 = money. Together: "How much money?" = "How much does it cost?"',category:'HSK 1–2 — Vocabulary'},
+  {q:'A classmate says: "我不饿，我饱了。" (Wǒ bù è, wǒ bǎo le.) What does this mean?',context:'饿 = hungry, 饱 = full.',options:['A. I am hungry and want to eat','B. I am not hungry; I am full','C. I don\'t like the food here','D. I want to drink something'],answer:1,tip:'不 negates the following adjective: 不饿 = not hungry. 饱了 = already full.',category:'HSK 1–2 — Listening Comprehension'},
+  {q:'Which is the correct way to ask "What is your name?" in Mandarin?',context:'',options:['A. 你好吗？(Nǐ hǎo ma?)','B. 你叫什么名字？(Nǐ jiào shénme míngzi?)','C. 你去哪里？(Nǐ qù nǎlǐ?)','D. 你吃饭了吗？(Nǐ chīfàn le ma?)'],answer:1,tip:'你叫 = you are called, 什么 = what, 名字 = name. "What are you called?" = "What is your name?"',category:'HSK 1–2 — Vocabulary'},
+  {q:'Select the correct sentence using 的 (de) as a possessive particle:',context:'的 (de) connects a modifier to a noun, similar to "\'s" in English.',options:['A. 我书的 (wǒ shū de)','B. 我的书 (wǒ de shū)','C. 书我的 (shū wǒ de)','D. 的我书 (de wǒ shū)'],answer:1,tip:'Possessive structure: Possessor + 的 + noun. 我的书 = my book.',category:'HSK 1–2 — Grammar'},
+  {q:'The word 大 (dà) means:',context:'',options:['A. Small','B. Fast','C. Big/Large','D. Good'],answer:2,tip:'大 (dà) = big/large. Its opposite is 小 (xiǎo) = small.',category:'HSK 1–2 — Vocabulary'},
+  {q:'Which sentence correctly uses 在 (zài) to indicate location?',context:'在 (zài) = to be at/in a location.',options:['A. 他在图书馆。(Tā zài túshūguǎn.) — He is at the library.','B. 他图书馆在。(Tā túshūguǎn zài.)','C. 图书馆他在。(Túshūguǎn tā zài.)','D. 在他图书馆。(Zài tā túshūguǎn.)'],answer:0,tip:'Location structure: Subject + 在 + place. 他在图书馆 = He is at the library.',category:'HSK 1–2 — Grammar'},
+],
 
-  'SAT:math': {
-    overview: [
-      'Module 1 — 22 questions covering algebra, advanced math, problem-solving, and data analysis (35 min)',
-      'Module 2 — 22 questions; adapts based on Module 1 performance (35 min)',
-      '~75% multiple choice, ~25% student-produced responses (grid-in)',
-      'Calculator permitted for the entire Math section on digital SAT',
-    ],
-    questionTypes: [
-      ['Linear Equations & Inequalities', 'Solve for x, interpret solutions in context, or graph linear relationships', 'Easy', 'Identify what the variable represents; translate word problems into equations before solving'],
-      ['Systems of Equations', 'Find the intersection point or number of solutions of two equations', 'Medium', 'Use substitution for simple pairs; use elimination when coefficients align; check for no-solution or infinite-solution cases'],
-      ['Quadratic Equations', 'Factor, use the quadratic formula, or complete the square to find roots', 'Hard', 'Memorise the quadratic formula; recognize vertex form for maximum/minimum questions'],
-      ['Data Analysis & Statistics', 'Interpret graphs, calculate means/medians, and understand probability', 'Medium', 'Read chart titles and axis labels carefully; mean vs. median questions often hinge on outliers'],
-      ['Geometry & Trigonometry', 'Apply area, volume, angle, and trigonometric ratio formulas', 'Hard', 'The formula sheet is provided on the real exam — know when to use sine, cosine, tangent for right triangles'],
-    ],
-    strategies: [
-      ['Concept-by-Concept Review', '30–45 min/day', ['Work through algebra, then advanced math, then geometry in sequence', 'After each concept, solve 10 practice questions immediately', 'Focus extra time on your two weakest topic areas']],
-      ['Error Log', '3 times/week', ['Record every wrong answer with the topic and the exact mistake', 'Re-solve each error-log problem one week later from scratch', 'Identify whether errors are conceptual, careless, or time-related']],
-      ['Full-Length Timed Practice', 'Weekly', ['Complete both math modules back-to-back under real conditions', 'Do not skip grid-in questions — partial credit is not available but a guess costs nothing', 'Review every missed question against the official solution']],
-    ],
-    timeTips: [
-      ['95 Seconds Per Question', 'Budget roughly 95 seconds per question; skip and return if a question is taking too long.'],
-      ['Use Your Calculator Strategically', 'Save the calculator for complex arithmetic; simple algebra is often faster by hand.'],
-      ['Plug In Numbers', 'For abstract algebra questions, substitute a simple number (e.g. x = 2) and test each answer option.'],
-      ['Check Grid-In Format', 'Student-produced responses have specific formatting rules (no mixed numbers, leading decimals); follow them precisely.'],
-    ],
-    mistakes: [
-      ['Misreading the question', 'Underline what is being asked (value of 2x? or x?) before solving.'],
-      ['Skipping steps on hard problems', 'Write out each step; careless arithmetic in multi-step problems is the most common mistake.'],
-      ['Not checking units or context', 'Word problems often require your numerical answer to be interpreted — "the cost is $X, not just X."'],
-      ['Leaving grid-in blank', 'There is no penalty for guessing on the SAT — always enter something.'],
-    ],
-    resources: [
-      ['Khan Academy Official SAT Math', 'Free Online', 'Essential'],
-      ['College Board Official SAT Practice Tests', 'Official PDF', 'Essential'],
-      ['Art of Problem Solving (algebra/geometry)', 'Textbook', 'Premium'],
-      ['PrepScholar SAT Math Guide', 'Online', 'Recommended'],
-      ['Desmos Graphing Calculator (built-in on test)', 'Free Tool', 'Essential'],
-    ],
-  },
+/* ── HSK 3-4 ── */
+'HSK:hsk-3-4':[
+  {q:'Choose the correct sentence using the 把 (bǎ) construction:',context:'The 把 construction moves the object before the verb to emphasise the result or effect of an action.',options:['A. 我把作业做完了。(I finished the homework.)','B. 我做完了把作业。','C. 把我作业做完了。','D. 我作业把做完了。'],answer:0,tip:'把 structure: Subject + 把 + Object + Verb + Result/Complement. 我把作业做完了 = I finished (completed) the homework.',category:'HSK 3–4 — Grammar'},
+  {q:'What does 虽然…但是… (suīrán…dànshì…) express?',context:'Common connective pattern in HSK 3–4.',options:['A. Because… therefore…','B. If… then…','C. Although… nevertheless…','D. Not only… but also…'],answer:2,tip:'虽然 = although, 但是 = but/however. Used to introduce a concession followed by a contrast.',category:'HSK 3–4 — Grammar'},
+  {q:'Select the word that best completes: "她说话很______，大家都喜欢听她讲故事。"',context:'Context: She speaks in a way that everyone enjoys. Choose the adjective.',options:['A. 生气 (shēngqì — angry)','B. 生动 (shēngdòng — vivid/lively)','C. 生活 (shēnghuó — life)','D. 生产 (shēngchǎn — produce)'],answer:1,tip:'生动 (lively/vivid) fits — it explains why everyone enjoys listening to her stories.',category:'HSK 3–4 — Vocabulary'},
+  {q:'Which sentence correctly uses 越来越 (yuèláiyuè = more and more)?',context:'',options:['A. 天气越来越热了。(The weather is getting hotter and hotter.)','B. 天气来越热了。','C. 天气越热了来越。','D. 越越天气热了。'],answer:0,tip:'越来越 + Adjective. 越来越热 = getting hotter and hotter. The structure is fixed.',category:'HSK 3–4 — Grammar'},
+  {q:'Rearrange these words into a correct sentence: 上课 / 认真 / 同学们 / 听 / 都 / 很',context:'Sentence reordering — a key HSK writing question type.',options:['A. 同学们上课都认真听很。','B. 同学们上课都很认真听。','C. 同学们都很认真上课听。','D. 认真同学们上课都很听。'],answer:1,tip:'SVO + adverb position: 同学们(subject) + 上课(time/context) + 都(all) + 很认真(very carefully) + 听(listen). = Everyone listens very carefully in class.',category:'HSK 3–4 — Writing'},
+  {q:'The phrase 对…来说 (duì…lái shuō) means:',context:'',options:['A. According to the results of…','B. From the perspective of / for (someone)','C. In spite of…','D. As long as…'],answer:1,tip:'对我来说 = "for me / from my perspective". Very common in HSK 4 reading and writing.',category:'HSK 3–4 — Vocabulary'},
+],
 
-  /* ══════ HSK ══════ */
-  'HSK:hsk-1-2': {
-    overview: [
-      'HSK 1 — 150 vocabulary words; covers very basic everyday expressions and sentences',
-      'HSK 2 — 300 vocabulary words; handle simple communication about familiar topics',
-      'Listening — match audio to pictures, true/false, multiple choice (20–25 questions)',
-      'Reading — match words to pictures, sentence completion from a word bank (20–25 questions)',
-    ],
-    questionTypes: [
-      ['Listening — Picture Matching', 'Listen to a word or phrase and select the matching picture', 'Easy', 'Learn the 150/300 core vocabulary with image associations; use flashcards with pictures, not translations'],
-      ['Listening — True or False', 'Listen to a sentence and decide if it matches a given picture or statement', 'Easy', 'Focus on key nouns and verbs; pictures are simple daily-life scenes'],
-      ['Reading — Word-Picture Matching', 'Match written Chinese words to their corresponding pictures', 'Easy', 'Recognise the characters rather than guess from context; vocabulary size is the key skill'],
-      ['Reading — Sentence Completion', 'Select the correct word from a given list to complete a short sentence', 'Medium', 'Look for grammatical clues (是/不是, 有/没有) and the overall sentence meaning'],
-    ],
-    strategies: [
-      ['Vocabulary First', 'Daily', ['Learn 10–15 new characters per day with pictures and audio', 'Use spaced-repetition apps (Anki, Pleco) for HSK 1 & 2 word lists', 'Write each character 5 times while saying it aloud']],
-      ['Listening Immersion', '20 min/day', ['Listen to HSK 1/2 dialogue recordings multiple times', 'Repeat after the speaker to build pronunciation', 'Connect each sound to its written character via pinyin']],
-      ['Reading Practice', '3 times/week', ['Read the 150/300 word list in simple sentences', 'Use beginner Chinese graded readers', 'Match pinyin to characters consistently']],
-    ],
-    timeTips: [
-      ['Pace with Audio', 'Listening questions play once; note the key word or character immediately.'],
-      ['Recognise, Do Not Translate', 'At this level, try to process Chinese directly — avoid mentally translating to English for every item.'],
-      ['Skip and Return', 'If a reading question stumps you, mark it and move on; do not spend more than 30 seconds on a single item.'],
-      ['Use Process of Elimination', 'Even if you are unsure, eliminate options that clearly do not match the image or sentence context.'],
-    ],
-    mistakes: [
-      ['Ignoring tones in listening', 'Chinese tones are meaning-bearing — mā (mother) vs. mǎ (horse). Practise tonal recognition.'],
-      ['Memorising pinyin but not characters', 'HSK Reading tests character recognition; both scripts must be learned together.'],
-      ['Not studying the official word list', 'HSK 1 & 2 are closed-vocabulary tests — the exam only uses words from the official list.'],
-      ['Skipping stroke order', 'Correct stroke order builds character memory and speeds writing; learn it from the start.'],
-    ],
-    resources: [
-      ['HSK Standard Course 1 & 2 (Hanban)', 'Official Textbook', 'Essential'],
-      ['Pleco Dictionary App', 'Free App', 'Essential'],
-      ['Anki with HSK 1–2 Deck', 'Free App', 'Recommended'],
-      ['HSK Academy Online Practice', 'Free Website', 'Recommended'],
-      ['ChinesePod Newbie Episodes', 'Free Podcast', 'Supplementary'],
-    ],
-  },
+/* ── HSK 5-6 ── */
+'HSK:hsk-5-6':[
+  {q:'Which four-character idiom (成语, chéngyǔ) means "to learn from experience and grow wiser"?',context:'HSK 5–6 tests knowledge of 成语 (set 4-character expressions).',options:['A. 半途而废 (bàntú ér fèi — give up halfway)','B. 吃一堑，长一智 (chī yī qiàn, zhǎng yī zhì — fall into a pit, gain wisdom)','C. 一石二鸟 (yī shí èr niǎo — kill two birds with one stone)','D. 马到成功 (mǎ dào chénggōng — immediate success)'],answer:1,tip:'吃一堑，长一智 literally: eat one pitfall, grow one wisdom — meaning learning from mistakes.',category:'HSK 5–6 — Idioms'},
+  {q:'Select the word that best fills the blank in a formal written context: "该政策的实施______了企业的创新积极性。"',context:'Context: The policy\'s implementation ___ enterprises\' innovation enthusiasm. Choose the most formal and precise verb.',options:['A. 提高了 (tígāo — raised/improved)','B. 搞了 (gǎo — did/made, colloquial)','C. 弄了 (nòng — handled, colloquial)','D. 给了 (gěi — gave)'],answer:0,tip:'HSK 5–6 formal writing requires precise verbs. 提高 (to raise/improve) is the formal, appropriate choice here.',category:'HSK 5–6 — Formal Vocabulary'},
+  {q:'The passive construction 被 (bèi) in "这项研究被广泛引用" means:',context:'',options:['A. This research cites many others widely','B. This research is widely cited','C. This research is not cited anywhere','D. Researchers widely criticise this study'],answer:1,tip:'被 + Verb = passive voice. 被广泛引用 = is widely cited (by others).',category:'HSK 5–6 — Grammar'},
+  {q:'Which sentence demonstrates the formal connective 尽管…仍然… (jǐnguǎn…réngrán…)?',context:'',options:['A. 尽管困难重重，他仍然坚持完成了任务。(Despite many difficulties, he still persisted and completed the task.)','B. 尽管他完成了任务困难重重仍然。','C. 他尽管仍然困难重重完成了任务。','D. 困难重重尽管，仍然他完成了任务。'],answer:0,tip:'尽管(although/despite) + clause + 仍然(still) + result. This is the standard concession-contrast structure.',category:'HSK 5–6 — Grammar'},
+  {q:'When writing an HSK 6 summary, which approach is most appropriate?',context:'HSK 6 Writing requires summarising an ~1,000-word article into ~400 words from memory.',options:['A. Copy the most important sentences directly from the original','B. Write entirely from imagination without referencing the original','C. Paraphrase the main argument and key supporting points using your own language','D. Focus only on the conclusion of the original article'],answer:2,tip:'HSK 6 summary requires paraphrasing — direct copying is penalised, and only the conclusion is insufficient.',category:'HSK 5–6 — Writing Strategy'},
+],
 
-  'HSK:hsk-3-4': {
-    overview: [
-      'HSK 3 — 600 vocabulary words; communicate in Chinese on a wide range of familiar topics',
-      'HSK 4 — 1,200 vocabulary words; discuss a variety of topics with native speakers fluently',
-      'Format — Listening, Reading, and Writing sections; writing includes sentence reordering and completion',
-      'HSK 4 Writing — write sentences using given words and correct sentence-order jumbles',
-    ],
-    questionTypes: [
-      ['Listening — Short Dialogue', 'Answer questions about brief conversations between two speakers', 'Medium', 'Identify setting, relationship, and main point; note contrast words (但是, 虽然) for harder questions'],
-      ['Reading — True/False/Not Given', 'Decide if a statement matches a reading passage', 'Medium', 'Do not infer beyond what is stated; NOT GIVEN means the passage is silent on the topic'],
-      ['Reading — Multiple Choice', 'Select the correct answer to a question about a passage', 'Medium', 'Locate the key sentence in the text before choosing; paraphrasing is common'],
-      ['Writing — Sentence Reordering', 'Arrange shuffled words or phrases into a grammatically correct sentence', 'Hard', 'Identify the subject, verb, and object first; adverbs and time expressions usually come before the verb'],
-      ['Writing — Sentence Completion', 'Use a given word to write a complete, grammatically correct sentence', 'Medium', 'Check that you have used the target word correctly and the sentence makes real-world sense'],
-    ],
-    strategies: [
-      ['Vocabulary Expansion', 'Daily', ['Use a spaced-repetition deck for HSK 3–4 (1,200 words)', 'Learn words in context sentences, not isolated lists', 'Study antonyms and collocations for each new word']],
-      ['Grammar Patterns', '3 times/week', ['Study 把-sentences, 被-passive, result complements, and aspect markers (了, 着, 过)', 'Practise writing 5 sentences per grammar pattern', 'Recognise these structures in reading passages']],
-      ['Integrated Practice', 'Weekly', ['Complete a full HSK 3 or HSK 4 mock test under timed conditions', 'Review all errors systematically', 'Read simple Chinese news articles to build reading stamina']],
-    ],
-    timeTips: [
-      ['Preview Reading Questions', 'For reading sections, skim the questions before reading the passage to focus your attention.'],
-      ['Subject-Verb-Object First', 'In sentence reordering, place the core SVO frame, then add modifiers — do not guess randomly.'],
-      ['Audio Plays Once', 'Write brief notes in Chinese characters or pinyin as you listen; do not try to write full sentences.'],
-      ['Allocate Writing Time', 'The writing section is often underestimated — budget at least 15 minutes for HSK 4 writing.'],
-    ],
-    mistakes: [
-      ['Confusing similar characters', 'At 600–1,200 words, look-alike characters (己/已/巳, 土/士) become common traps — study them in pairs.'],
-      ['Ignoring measure words', 'Chinese measure words (一本书, 三个人) are tested; errors in them reduce clarity scores.'],
-      ['Memorising example sentences without understanding', 'You need to produce new sentences; rote memory fails on novel sentence reordering.'],
-      ['Not reviewing listening transcripts', 'After every listening practice, read the transcript and identify every word you missed.'],
-    ],
-    resources: [
-      ['HSK Standard Course 3 & 4 (Hanban)', 'Official Textbook', 'Essential'],
-      ['Anki HSK 3–4 Deck', 'Free App', 'Essential'],
-      ['MDBG Chinese-English Dictionary', 'Free Online', 'Recommended'],
-      ['HSK Online Mock Tests (hsk.academy)', 'Free Website', 'Recommended'],
-      ['Mandarin Corner YouTube (intermediate)', 'YouTube', 'Supplementary'],
-    ],
-  },
+/* ── TOPIK I ── */
+'TOPIK:topik-i':[
+  {q:'What does 안녕하세요 (annyeonghaseyo) mean?',context:'',options:['A. Goodbye','B. Thank you','C. Hello / How are you','D. Excuse me'],answer:2,tip:'안녕하세요 is the standard polite greeting in Korean, used at any time of day.',category:'TOPIK I — Vocabulary'},
+  {q:'Which particle marks the subject of a sentence in Korean?',context:'',options:['A. 을/를','B. 에','C. 이/가','D. 에서'],answer:2,tip:'이/가 marks the subject. 을/를 marks the object. 에 marks location/direction. 에서 marks location of action.',category:'TOPIK I — Grammar'},
+  {q:'Choose the correct translation: "나는 학생이에요." (Naneun haksaengieyo.)',context:'나 = I, 학생 = student, 이에요 = am/is (polite)',options:['A. I am a teacher.','B. I am a student.','C. She is a student.','D. I am not a student.'],answer:1,tip:'나는 = I (topic), 학생이에요 = am a student (polite form using 이다).',category:'TOPIK I — Grammar'},
+  {q:'Which sentence correctly uses 있어요 (isseoyo = there is / have)?',context:'있어요 expresses existence or possession.',options:['A. 저는 시간이 있어요. (I have time.)','B. 저는 시간이 없어요이에요.','C. 있어요 저는 시간.','D. 시간 있어요는 저.'],answer:0,tip:'있어요 comes at the end: Subject + 이/가 + 있어요. 저는 시간이 있어요 = I have time.',category:'TOPIK I — Grammar'},
+  {q:'A sign reads: "화장실은 2층에 있습니다." What does this mean?',context:'화장실 = restroom, 2층 = 2nd floor, 있습니다 = is/are (formal)',options:['A. The restroom is closed.','B. The restroom is on the 2nd floor.','C. The elevator is on the 2nd floor.','D. The entrance is on the 2nd floor.'],answer:1,tip:'에 + 있다 expresses location: 2층에 있습니다 = is on the 2nd floor.',category:'TOPIK I — Reading'},
+  {q:'How do you say "I don\'t understand" in polite Korean?',context:'',options:['A. 알아요 (arayo)','B. 모르겠어요 (moreugesseoyo)','C. 알겠어요 (algesseoyo)','D. 괜찮아요 (gwaenchanayo)'],answer:1,tip:'모르겠어요 literally means "I think I don\'t know/understand." 알아요 = I know. 알겠어요 = I understand (I\'ve got it).',category:'TOPIK I — Vocabulary'},
+],
 
-  'HSK:hsk-5-6': {
-    overview: [
-      'HSK 5 — 2,500 vocabulary words; read Chinese newspapers and watch films with only minor difficulty',
-      'HSK 6 — 5,000 vocabulary words; easily comprehend any written or spoken Chinese',
-      'HSK 6 Listening — 50 questions; complex dialogues and lectures; 50-minute audio',
-      'HSK 6 Writing — condense a 1,000-word passage into an ~400-word summary from memory',
-    ],
-    questionTypes: [
-      ['Listening — Interview & Lecture', 'Answer comprehension questions about formal interviews and academic content', 'Hard', 'Note the speaker\'s attitude, purpose, and supporting evidence; key information often comes in the middle of a segment'],
-      ['Reading — Fill in the Blank', 'Select the best word from options to complete a formal paragraph', 'Hard', 'Analyse grammatical role AND semantic fit; pay attention to register and collocations'],
-      ['Reading — Sentence Insertion', 'Choose where a given sentence best fits into a passage', 'Hard', 'Identify discourse connectors in the sentence; it must logically follow the preceding and lead into the following sentence'],
-      ['Writing — Passage Summary', 'Read an ~1,000-word article, set it aside, and write a ~400-word summary in your own words', 'Hard', 'During reading, note 3–4 main points with key vocabulary; the summary must preserve the original structure and tone'],
-    ],
-    strategies: [
-      ['Extensive Reading', 'Daily', ['Read Chinese news: 人民日报, 知乎, financial media', 'Annotate unfamiliar words and look up collocations', 'Aim to read 1,000 Chinese characters per day at natural speed']],
-      ['Listening to Native Media', '30–60 min/day', ['Watch Chinese TV news, documentaries, and talk shows', 'Summarise each segment in written Chinese', 'Focus on detecting speaker attitudes and discourse structure']],
-      ['Summary Writing Practice', '3 times/week', ['Read an article, close it, then write a summary from memory', 'Check your summary against the original for accuracy', 'Practise reducing 800 words to 400 while preserving all main points']],
-    ],
-    timeTips: [
-      ['Reading: Time per Section', 'HSK 6 Reading is 50 questions in 50 minutes — one question per minute; do not let fill-in-blank questions steal time.'],
-      ['Writing: Notes During Reading', 'You may take notes while reading the source article; use these to structure your summary (not copy).'],
-      ['Listen for Macro Structure', 'In long listening segments, note when the topic shifts; transitions signal new important content.'],
-      ['Summary: Start with Main Idea', 'Open your HSK 6 summary with the article\'s central argument, then cover supporting points in order.'],
-    ],
-    mistakes: [
-      ['Copying phrases from the reading into the summary', 'The summary must use your own language — direct copying is penalised.'],
-      ['Neglecting formal register', 'HSK 5–6 texts are formal; use 成语 and formal vocabulary appropriately, not colloquial expressions.'],
-      ['Weak note-taking during the reading phase', 'With only 10–15 minutes to read the source, efficient notes are critical for the summary.'],
-      ['Underestimating listening complexity', 'HSK 5–6 audio includes interviews and lectures with deliberate speed and complex vocabulary.'],
-    ],
-    resources: [
-      ['HSK Standard Course 5 & 6 (Hanban)', 'Official Textbook', 'Essential'],
-      ['People\'s Daily Online (人民日报)', 'Free News', 'Essential'],
-      ['Anki HSK 5–6 Deck', 'Free App', 'Recommended'],
-      ['HSK6 Mock Tests (hsk.academy)', 'Free Website', 'Recommended'],
-      ['ChinesePod Advanced Episodes', 'Online Platform', 'Supplementary'],
-    ],
-  },
+/* ── TOPIK Listening (II) ── */
+'TOPIK:listening':[
+  {q:'The announcer says: "이번 주 토요일에 한국 문화 축제가 열립니다." What event is announced?',context:'이번 주 = this week, 토요일 = Saturday, 한국 문화 = Korean culture, 축제 = festival, 열립니다 = will be held',options:['A. A Korean film screening','B. A Korean culture festival this Saturday','C. A Korean food competition next week','D. A museum opening ceremony'],answer:1,tip:'열리다 = to be held/opened. 축제 = festival. The key information is event type + timing.',category:'TOPIK Listening — Announcement'},
+  {q:'A man says: "지하철보다 버스가 더 빠를 것 같아요." What is he suggesting?',context:'지하철 = subway, 버스 = bus, 더 빠를 것 같아요 = seems faster',options:['A. The subway is faster than the bus','B. The bus seems faster than the subway','C. Both are equally fast','D. He prefers the subway'],answer:1,tip:'보다 = "than" in comparisons. A보다 B가 더 + adj = B is more [adj] than A.',category:'TOPIK Listening — Comparison'},
+  {q:'A woman says she cannot attend a meeting because she has a doctor\'s appointment. Which response is most appropriate?',context:'',options:['A. "그럼, 왜 갔어요?" (Then why did you go?)','B. "괜찮아요. 회의 내용을 나중에 알려드릴게요." (That\'s fine. I\'ll let you know the meeting content later.)','C. "의사선생님한테 가지 마세요." (Don\'t go to the doctor.)','D. "지금 당장 오세요." (Come right now.)'],answer:1,tip:'Understanding social register and appropriate responses is key in TOPIK Listening conversation questions.',category:'TOPIK Listening — Conversation'},
+  {q:'The speaker says: "요즘 한국어를 배우는 외국인이 점점 늘고 있습니다." What trend is described?',context:'요즘 = lately, 외국인 = foreigners, 점점 늘고 있습니다 = is gradually increasing',options:['A. Koreans are learning more foreign languages','B. The number of foreigners learning Korean is gradually increasing','C. Korean language schools are closing','D. Foreign students are leaving Korea'],answer:1,tip:'점점 = gradually, 늘다 = to increase. The subject is 외국인 = foreigners.',category:'TOPIK Listening — Trend'},
+],
 
-  /* ══════ TOPIK ══════ */
-  'TOPIK:topik-i': {
-    overview: [
-      'TOPIK I covers Levels 1 (beginner) and Level 2 (elementary)',
-      'Listening — 30 questions; everyday conversations and simple announcements (40 min)',
-      'Reading — 40 questions; short texts, notices, and simple passages (60 min)',
-      'No Writing section in TOPIK I; Level 2 threshold is 140/200 points',
-    ],
-    questionTypes: [
-      ['Listening — Matching Picture', 'Select the picture that matches the short dialogue or announcement', 'Easy', 'Focus on keywords and nouns; pictures show everyday objects and locations'],
-      ['Listening — True or False', 'Decide if a statement about the dialogue is correct', 'Easy', 'Listen for factual details (who, what, where); pay attention to negatives'],
-      ['Reading — Short Text Comprehension', 'Answer questions about short notices, advertisements, and signs', 'Medium', 'Read the heading and bold text first; short texts are direct and factual'],
-      ['Reading — Fill in the Blank', 'Choose the correct particle, verb ending, or vocabulary word', 'Medium', 'Identify the grammatical context: subject/object markers, tense, and formality level'],
-    ],
-    strategies: [
-      ['Core Vocabulary', 'Daily', ['Learn 800–1,000 essential Korean words using Anki or flashcards', 'Study vocabulary thematically (food, transport, health, weather)', 'Always learn words with their pronunciation and example sentences']],
-      ['Grammar Foundations', '4 times/week', ['Study subject/object markers (이/가, 을/를), topic marker (은/는)', 'Learn basic tenses: present (아/어요), past (았/었어요), future (을 거예요)', 'Practise 3–5 grammar patterns per week with written sentences']],
-      ['Listening Practice', '20 min/day', ['Listen to TOPIK I sample dialogues repeatedly', 'Use Korean media at slow speed: Talk To Me In Korean, Pimsleur', 'Repeat after speakers to internalise pronunciation patterns']],
-    ],
-    timeTips: [
-      ['Listening: Preview Questions', 'Scan the listening questions during the intro announcement; know what to listen for.'],
-      ['Reading: Short Texts First', 'Complete the shorter, simpler reading items first to build confidence and conserve time.'],
-      ['Particle Focus', 'Grammar questions hinge on particles; learn them thoroughly — they are the highest-frequency test item.'],
-      ['Guess Systematically', 'If unsure, eliminate options with grammar structures you do not recognise; pick the most familiar structure.'],
-    ],
-    mistakes: [
-      ['Ignoring particles', 'Korean particles determine grammar meaning completely; confusing 이/가 vs. 은/는 is a major error source.'],
-      ['Over-translating to English', 'At TOPIK I level, Korean structures do not map directly; think in Korean patterns.'],
-      ['Not learning Hangul fluently', 'Reading speed is critical; slow Hangul reading costs time on the reading section.'],
-      ['Underestimating listening speed', 'TOPIK I dialogues are clear but real-speed Korean — build listening stamina daily.'],
-    ],
-    resources: [
-      ['Talk To Me In Korean Levels 1–2', 'Free Podcast/Textbook', 'Essential'],
-      ['Official TOPIK Practice Tests (NIIED)', 'Official PDF', 'Essential'],
-      ['Anki Korean Vocabulary Deck', 'Free App', 'Recommended'],
-      ['TTMIK Grammar in Korean', 'Free Website', 'Recommended'],
-      ['Sogang Korean 1A/1B', 'Textbook', 'Supplementary'],
-    ],
-  },
+/* ── TOPIK Reading ── */
+'TOPIK:reading':[
+  {q:'What is the main topic of the advertisement? "건강한 삶을 위한 유기농 식품 전문 매장 — 신선한 채소, 과일, 유제품을 합리적인 가격에!"',context:'건강 = health, 유기농 = organic, 매장 = store, 신선한 = fresh, 채소 = vegetables, 합리적인 = reasonable',options:['A. A gym membership offer','B. A cooking class advertisement','C. An organic food store promoting fresh produce at reasonable prices','D. A farm looking for workers'],answer:2,tip:'Identify the key nouns: 유기농(organic) + 매장(store) + 채소/과일(vegetables/fruit) + 가격(price).',category:'TOPIK Reading — Advertisement'},
+  {q:'Fill in the blank: "건강을 위해서 규칙적으로 운동______ 합니다."',context:'Sentence: "For health, you should exercise regularly ______." Choose the correct verb ending to complete the advice.',options:['A. 할','B. 해야','C. 하기','D. 하면'],answer:1,tip:'해야 합니다 = "must/should do" — expressing obligation. 건강을 위해서 = for the sake of health.',category:'TOPIK Reading — Fill in the Blank'},
+  {q:'The article states: "인터넷 사용 시간이 길수록 수면 시간이 줄어드는 경향이 있다." What does this suggest?',context:'시간이 길수록 = the longer the time, 수면 = sleep, 줄어드는 = decreases, 경향 = tendency',options:['A. Sleeping more leads to more internet use','B. The longer people use the internet, the less sleep they tend to get','C. Internet use has no effect on sleep','D. Young people sleep more than adults'],answer:1,tip:'길수록 = "the longer (it is)", 줄어들다 = to decrease. This is a correlational claim.',category:'TOPIK Reading — Comprehension'},
+  {q:'Choose the most appropriate connective to complete: "열심히 공부했다. ______ 시험에서 좋은 점수를 받았다."',context:'The first sentence: studied hard. The second sentence: got a good score on the exam.',options:['A. 그런데 (but/however)','B. 그래서 (so/therefore)','C. 하지만 (but/however)','D. 아니면 (or else)'],answer:1,tip:'그래서 = "therefore/so" — expressing result. Hard study → good score is a cause-result relationship.',category:'TOPIK Reading — Connectives'},
+],
 
-  'TOPIK:listening': {
-    overview: [
-      'TOPIK II Listening — 50 questions over 60 minutes; dialogues, lectures, and news broadcasts',
-      'Level 3–4 items (questions 1–30): medium-length conversations and announcements',
-      'Level 5–6 items (questions 31–50): complex interviews, academic discussions, and radio programmes',
-      'Played once with no rewind; questions appear with four multiple-choice options',
-    ],
-    questionTypes: [
-      ['Purpose / Main Idea', 'Identify why the speaker made a statement or what the conversation is about', 'Medium', 'Predict purpose from tone and context; the first and last sentences usually carry the main idea'],
-      ['Selecting the Next Action', 'Choose what the speaker will most likely do next', 'Medium', 'Listen for future tense expressions and intentions; the answer is implied by the dialogue conclusion'],
-      ['News / Announcement Comprehension', 'Answer questions about broadcast content', 'Hard', 'Focus on who, what, when, where; announcements follow a predictable formula'],
-      ['Academic Lecture', 'Answer questions about a scholarly talk (Levels 5–6)', 'Hard', 'Note the main argument, examples, and conclusion; ignore unfamiliar vocabulary if the main point is clear'],
-    ],
-    strategies: [
-      ['Native Media Immersion', 'Daily', ['Watch Korean dramas, news, and variety shows without subtitles', 'Practise shadowing — repeat after speakers at natural speed', 'Target academic and formal speech, not only casual conversation']],
-      ['TOPIK Mock Listening', '3 times/week', ['Complete full 50-question listening sections under time pressure', 'After each test, listen again while reading the transcript', 'Categorise errors: vocabulary, speed, or question misreading']],
-      ['Vocabulary for Listening', 'Daily', ['Study formal Korean vocabulary: 논문, 발표, 주제, 분석', 'Learn discourse markers: 따라서, 즉, 반면에, 결론적으로', 'Listen for these markers to track content organisation']],
-    ],
-    timeTips: [
-      ['Scan Ahead', 'Read the answer options during the brief pause before each question plays to know what to listen for.'],
-      ['Do Not Fixate on Missed Words', 'If one word is unclear, use context to fill the gap; fixating causes you to miss the next sentence.'],
-      ['Attitude and Tone', 'Higher-level questions ask about the speaker\'s attitude; listen for intonation and hedging language.'],
-      ['Four Options — Eliminate Two', 'Usually two options are clearly wrong; narrow to two, then listen for the distinguishing detail.'],
-    ],
-    mistakes: [
-      ['Only practising easy-level content', 'Level 5–6 questions require exposure to academic and formal Korean; include these in practice.'],
-      ['Not reviewing transcripts', 'After every listening set, read the script and find every phrase you misheard.'],
-      ['Ignoring Korean discourse markers', '따라서 (therefore), 반면에 (on the other hand) signal argument structure — missing them causes wrong answers.'],
-      ['Underestimating pronunciation variation', 'Korean undergoes sound change rules (연음, 경음화); practise these patterns so they do not confuse your ear.'],
-    ],
-    resources: [
-      ['Official TOPIK II Listening Tests (NIIED)', 'Official PDF + Audio', 'Essential'],
-      ['KBS World Radio Korean', 'Free Broadcast', 'Recommended'],
-      ['Talk To Me In Korean Levels 3–6', 'Textbook', 'Recommended'],
-      ['Yonsei Korean Listening Course', 'Online', 'Premium'],
-      ['Naver Dictionary App', 'Free App', 'Supplementary'],
-    ],
-  },
+/* ── TOPIK Writing ── */
+'TOPIK:writing':[
+  {q:'For the TOPIK II extended essay (Question 54), which opening sentence is most appropriate for the topic "The impact of social media on modern relationships"?',context:'TOPIK II Writing Question 54 requires a ~600-word formal argumentative essay.',options:['A. "소셜 미디어가 좋아요." (Social media is good.)','B. "현대 사회에서 소셜 미디어는 인간관계에 큰 영향을 미치고 있다." (In modern society, social media is having a great impact on human relationships.)','C. "나는 소셜 미디어를 많이 사용해요." (I use social media a lot.)','D. "소셜 미디어에 대해 쓰겠습니다." (I will write about social media.)'],answer:1,tip:'Formal essays begin with a clear, third-person statement of the topic\'s significance — not personal statements or announcements.',category:'TOPIK Writing — Essay Opening'},
+  {q:'Which connective is most appropriate to introduce a contrasting viewpoint in a TOPIK formal essay?',context:'',options:['A. 그리고 (and)','B. 그래서 (therefore)','C. 반면에 (on the other hand)','D. 예를 들어 (for example)'],answer:2,tip:'반면에 = "on the other hand" — used to introduce an opposing point in formal argumentation.',category:'TOPIK Writing — Connectives'},
+  {q:'A TOPIK Question 53 response asks you to describe a bar chart showing increasing smartphone use from 2010 to 2025. Which sentence best opens this response?',context:'',options:['A. "스마트폰을 많이 사용하면 안 된다." (You should not use smartphones too much.)','B. "위의 그래프는 2010년부터 2025년까지 스마트폰 사용률의 변화를 나타내고 있다." (The graph above shows the change in smartphone usage rate from 2010 to 2025.)','C. "스마트폰은 편리하다." (Smartphones are convenient.)','D. "나는 스마트폰을 자주 사용한다." (I often use a smartphone.)'],answer:1,tip:'Data description responses should open with an objective description of what the graph shows — not opinions or personal statements.',category:'TOPIK Writing — Data Description'},
+],
 
-  'TOPIK:reading': {
-    overview: [
-      'TOPIK II Reading — 50 questions in 70 minutes; includes fill-in-blank, topic selection, and long-passage comprehension',
-      'Levels 3–4 (questions 1–30): advertisements, short articles, and simple informational texts',
-      'Levels 5–6 (questions 31–50): editorial, academic, and social commentary passages',
-      'Questions test vocabulary, grammar, inference, and understanding of the author\'s perspective',
-    ],
-    questionTypes: [
-      ['Fill in the Blank (Grammar)', 'Select the correct grammatical form to complete a sentence', 'Medium', 'Identify the sentence function (condition, reason, contrast) and match the appropriate connective ending'],
-      ['Topic / Main Idea Selection', 'Choose the main idea or title that best represents a passage', 'Medium', 'Read the entire passage; the main idea encompasses all paragraphs, not just one point'],
-      ['Correct Sentence Insertion', 'Find where a given sentence best fits into a passage', 'Hard', 'Look for discourse connectors and pronoun references that link the inserted sentence to surrounding text'],
-      ['Long Passage Comprehension', 'Answer multiple questions about an argumentative or informational article', 'Hard', 'Identify the author\'s stance and supporting evidence; do not import assumptions from outside the text'],
-    ],
-    strategies: [
-      ['Reading Stamina', 'Daily', ['Read Korean articles on topics: science, culture, social issues', 'Aim to read 500+ characters without stopping or looking up words', 'Identify topic sentences and supporting evidence as you read']],
-      ['Grammar Patterns for Level 5–6', '3 times/week', ['Study complex endings: -더라도, -는 한, -을 뿐만 아니라, -에도 불구하고', 'Practise choosing between similar endings by identifying the logical relationship', 'Read model sentences and paraphrase them in simpler Korean']],
-      ['Mock Reading Sections', 'Weekly', ['Complete a full 50-question reading section in 70 minutes', 'Note which question types cause the most errors', 'For long passages, practise reading the questions first, then the passage']],
-    ],
-    timeTips: [
-      ['Short Items First', 'Dispatch the fill-in-blank and short-text items quickly to save time for long passages.'],
-      ['Paragraph Main Idea', 'For topic selection, read the first sentence of each paragraph; the topic must cover all of them.'],
-      ['Author\'s Stance', 'Level 5–6 questions often test the author\'s attitude — look for evaluative adjectives and hedging phrases.'],
-      ['Sentence Insertion Logic', 'The inserted sentence must make logical and grammatical sense with the sentence before AND after it.'],
-    ],
-    mistakes: [
-      ['Spending too long on fill-in-blank', 'These should be quick; if you cannot decide in 60 seconds, move on and return.'],
-      ['Ignoring connective endings in fill-in-blank', 'The connective is the answer — identify the logical relationship (contrast, reason, condition) first.'],
-      ['Making inferences not supported by the text', 'TOPIK Reading is evidence-based; do not assume what the author "must think."'],
-      ['Misidentifying main idea', 'The correct topic option covers the whole passage; one that only matches one paragraph is a distractor.'],
-    ],
-    resources: [
-      ['Official TOPIK II Reading Tests (NIIED)', 'Official PDF', 'Essential'],
-      ['이유진 한국어 TOPIK Reading', 'Textbook', 'Recommended'],
-      ['Naver News (나는 기사)', 'Free Reading', 'Supplementary'],
-      ['Korean Grammar in Use — Advanced', 'Textbook', 'Recommended'],
-      ['TOPIK Guide Website', 'Free Online', 'Recommended'],
-    ],
-  },
+/* ── GED Math ── */
+'GED:math':[
+  {q:'A car travels 240 miles in 4 hours. What is its average speed in miles per hour?',context:'',options:['A. 40 mph','B. 60 mph','C. 80 mph','D. 960 mph'],answer:1,tip:'Speed = Distance ÷ Time = 240 ÷ 4 = 60 mph.',category:'GED Math — Rates'},
+  {q:'Solve for x: 5x − 3 = 22',context:'',options:['A. 4','B. 5','C. 19','D. 25'],answer:1,tip:'5x = 22 + 3 = 25, so x = 25 ÷ 5 = 5.',category:'GED Math — Algebra'},
+  {q:'A rectangle has a length of 12 cm and a width of 7 cm. What is its area?',context:'',options:['A. 38 cm²','B. 84 cm²','C. 76 cm²','D. 144 cm²'],answer:1,tip:'Area of rectangle = length × width = 12 × 7 = 84 cm².',category:'GED Math — Geometry'},
+  {q:'Which of the following is equivalent to 3²× 3³?',context:'',options:['A. 3⁵','B. 3⁶','C. 9⁵','D. 9⁶'],answer:0,tip:'When multiplying powers with the same base, add the exponents: 3² × 3³ = 3^(2+3) = 3⁵.',category:'GED Math — Exponents'},
+  {q:'What is 15% of 200?',context:'',options:['A. 15','B. 20','C. 25','D. 30'],answer:3,tip:'15% × 200 = 0.15 × 200 = 30.',category:'GED Math — Percentages'},
+  {q:'A student scored 72, 85, 90, 68, and 80 on five tests. What is the mean score?',context:'',options:['A. 75','B. 79','C. 80','D. 85'],answer:1,tip:'Mean = sum ÷ count = (72+85+90+68+80) ÷ 5 = 395 ÷ 5 = 79.',category:'GED Math — Statistics'},
+  {q:'What is the value of √144?',context:'',options:['A. 11','B. 12','C. 14','D. 72'],answer:1,tip:'12 × 12 = 144, so √144 = 12.',category:'GED Math — Number Sense'},
+  {q:'If a triangle has a base of 10 cm and a height of 6 cm, what is its area?',context:'',options:['A. 16 cm²','B. 30 cm²','C. 60 cm²','D. 120 cm²'],answer:1,tip:'Area of triangle = ½ × base × height = ½ × 10 × 6 = 30 cm².',category:'GED Math — Geometry'},
+],
 
-  'TOPIK:writing': {
-    overview: [
-      'TOPIK II Writing — 4 questions in 50 minutes; tests grammar, vocabulary, and composition',
-      'Questions 51–52 — Fill in the blank in a short passage (each ~10 min)',
-      'Question 53 — Write an informational paragraph using a graph or data prompt (~200 words, 10 min)',
-      'Question 54 — Write a full argumentative essay on a given topic (~600 words, 30 min)',
-    ],
-    questionTypes: [
-      ['Fill in the Blank (51–52)', 'Complete gaps in a short functional text (advertisement, invitation, report) with the most appropriate phrase', 'Medium', 'Use grammatical context and the surrounding text to determine what type of content fits; match formality level'],
-      ['Data Description (53)', 'Describe a graph, chart, or table accurately in paragraph form', 'Hard', 'Open with the overall trend; describe key data points; use hedging language for estimates'],
-      ['Argumentative Essay (54)', 'Write a structured essay arguing a position on a social issue in ~600 words', 'Hard', 'Plan before writing: intro (position), body 1 (argument + evidence), body 2 (counter + rebuttal), conclusion'],
-    ],
-    strategies: [
-      ['Essay Structure Mastery', 'Daily', ['Memorise a 4-paragraph essay template in Korean', 'Practise writing the intro and conclusion in under 5 minutes each', 'Review Level 5–6 sample essays and annotate their structure']],
-      ['Data Writing Practice', '3 times/week', ['Practice describing Korean graphs and charts with accurate language', 'Learn data vocabulary: 증가, 감소, 비율, 차지하다, 반면에', 'Aim for 180–220 words per practice attempt']],
-      ['Vocabulary and Grammar Range', '4 times/week', ['Use advanced connectives and formal endings in every practice sentence', 'Avoid repeating the same vocabulary — learn 3 synonyms for common concepts', 'Proofread for particle and tense errors after every practice']],
-    ],
-    timeTips: [
-      ['30 Minutes for Q54', 'Allocate the most time to Q54 — it is worth the most marks (100 points of 300 total for writing).'],
-      ['5-Minute Outline for Essay', 'Write a brief bullet-point plan before starting Q54; disorganised essays score poorly.'],
-      ['Match Formality', 'TOPIK Writing requires formal Korean (합니다 / -ㅂ니다 register); avoid casual speech forms.'],
-      ['Proofread Once', 'Leave 2–3 minutes after completing Q54 to check particles, verb endings, and spacing.'],
-    ],
-    mistakes: [
-      ['Using informal endings in the essay', 'Q54 requires formal register throughout; 해요 form is acceptable at lower levels but -ㅂ니다 scores higher.'],
-      ['Not writing enough for Q54', 'Below 400 words is penalised; below 300 words is a significant deduction — aim for 550–650.'],
-      ['Ignoring Q53 data accuracy', 'Describe the data as shown; inventing statistics or misrepresenting trends costs task-completion marks.'],
-      ['Repeating the prompt wording', 'Paraphrase the topic in your own words throughout — direct repetition shows limited vocabulary.'],
-    ],
-    resources: [
-      ['Official TOPIK II Writing Samples (NIIED)', 'Official PDF', 'Essential'],
-      ['이유진 TOPIK 쓰기', 'Textbook', 'Recommended'],
-      ['Korean Grammar in Use — Intermediate/Advanced', 'Textbook', 'Recommended'],
-      ['TOPIK Guide — Writing Tips', 'Free Website', 'Recommended'],
-      ['Naver Blog Corpus (formal writing examples)', 'Free Online', 'Supplementary'],
-    ],
-  },
+/* ── GED Science ── */
+'GED:science':[
+  {q:'What is the role of mitochondria in a cell?',context:'Cell biology — organelle functions.',options:['A. To produce proteins','B. To generate energy (ATP) through cellular respiration','C. To control cell division','D. To transport materials out of the cell'],answer:1,tip:'Mitochondria are the "powerhouse of the cell" — they produce ATP through cellular respiration.',category:'GED Science — Life Science'},
+  {q:'A scientist tests whether fertiliser affects plant growth. She grows 20 plants with fertiliser and 20 without. Which group is the control group?',context:'Scientific method — experimental design.',options:['A. The 20 plants with fertiliser','B. The 20 plants without fertiliser','C. Both groups equally','D. Neither group — she needs a third group'],answer:1,tip:'The control group receives no treatment (no fertiliser) — it is the baseline for comparison.',category:'GED Science — Scientific Method'},
+  {q:'According to Newton\'s First Law of Motion, an object at rest will:',context:'Physical science — Newton\'s Laws.',options:['A. Begin moving on its own after a period of time','B. Remain at rest unless acted upon by an unbalanced external force','C. Always accelerate toward the ground','D. Move in a curved path due to gravity'],answer:1,tip:'Newton\'s First Law = Law of Inertia: objects stay in their current state of motion unless a net force acts on them.',category:'GED Science — Physical Science'},
+  {q:'Which process allows plants to convert sunlight into glucose?',context:'',options:['A. Cellular respiration','B. Fermentation','C. Photosynthesis','D. Osmosis'],answer:2,tip:'Photosynthesis: 6CO₂ + 6H₂O + light energy → C₆H₁₂O₆ + 6O₂. Plants convert light into sugar.',category:'GED Science — Life Science'},
+  {q:'A graph shows that as ocean temperature increases, coral bleaching events also increase. This graph demonstrates:',context:'Data analysis and interpretation.',options:['A. That warmer oceans cause coral bleaching','B. A correlation between ocean temperature and coral bleaching events','C. That coral bleaching causes ocean temperature to rise','D. No relationship between the two variables'],answer:1,tip:'A graph showing two variables increasing together demonstrates CORRELATION, not causation — do not assume one causes the other.',category:'GED Science — Data Analysis'},
+  {q:'What type of rock forms when magma cools and solidifies?',context:'Earth and Space Science.',options:['A. Sedimentary','B. Metamorphic','C. Igneous','D. Limestone'],answer:2,tip:'Igneous rock forms from cooled magma or lava. Sedimentary forms from compressed sediments; metamorphic forms under heat/pressure.',category:'GED Science — Earth Science'},
+],
 
-  /* ══════ GED ══════ */
-  'GED:math': {
-    overview: [
-      'Part 1 — 5 questions, no calculator allowed; tests numerical and algebraic reasoning',
-      'Part 2 — 41 questions, calculator allowed; covers algebra, geometry, statistics, and data',
-      'Question types: multiple choice, fill-in-the-blank, drag-and-drop, and hot-spot',
-      '115 minutes total; passing score 145, college-ready score 165+',
-    ],
-    questionTypes: [
-      ['Algebraic Reasoning', 'Solve equations, inequalities, and systems; interpret expressions in context', 'Medium', 'Translate word problems into equations; check your answer by substituting back into the original'],
-      ['Quantitative Reasoning', 'Work with ratios, proportions, percentages, and rates in real-world contexts', 'Easy', 'Set up proportions carefully; label units to avoid mixing hours/minutes or dollars/cents'],
-      ['Geometry', 'Calculate area, perimeter, volume, and angle measures; interpret coordinate graphs', 'Medium', 'Memorise formulas for circles, triangles, rectangles, and 3D solids; they are provided on the exam but recognising when to use them is key'],
-      ['Data Analysis & Statistics', 'Interpret tables, graphs, and statistical summaries; calculate mean, median, and probability', 'Easy', 'Read graph axes and titles carefully; median is the middle value when data is ordered'],
-    ],
-    strategies: [
-      ['Concept-First Review', '45 min/day', ['Use Khan Academy GED Math or GED.com prep', 'Cover one topic per session: algebra, then geometry, then statistics', 'After each topic, complete 10 practice problems before moving on']],
-      ['Calculator Proficiency', '3 times/week', ['Practise with the TI-30XS calculator (the official GED calculator)', 'Learn how to enter fractions, find square roots, and compute percentages', 'Do not rely on the calculator for simple arithmetic — save it for complex steps']],
-      ['Mock Test Under Conditions', 'Weekly', ['Take a full 115-minute GED Math practice test', 'Score and categorise errors by topic', 'Re-study any topic where you score below 70%']],
-    ],
-    timeTips: [
-      ['No Calculator Part First', 'Complete the 5 no-calculator questions efficiently; they are typically numerical and algebraic, not complex.'],
-      ['Skip and Flag', 'If a problem requires long calculation or unfamiliar setup, flag it and return after completing easier items.'],
-      ['Estimate for Sanity Checks', 'After solving, quickly estimate whether your answer is a reasonable size (e.g. an area of -5 is impossible).'],
-      ['Read Every Word', 'Word problems contain every number and condition you need — and sometimes deliberate distractors; underline the question.'],
-    ],
-    mistakes: [
-      ['Forgetting to convert units', 'Check whether the question asks for feet vs. inches, hours vs. minutes before calculating.'],
-      ['Misidentifying the question being asked', 'Re-read the final question; many students solve for x when the question asks for 2x.'],
-      ['Skipping formula review', 'GED provides a formula sheet but recognising when each formula applies is the real skill.'],
-      ['Not practising Part 1 (no calculator)', 'Mental math and number sense are tested without the calculator — do not neglect this section.'],
-    ],
-    resources: [
-      ['Khan Academy GED Math', 'Free Online', 'Essential'],
-      ['GED.com Official Study Guide', 'Official Website', 'Essential'],
-      ['Kaplan GED Test Prep', 'Textbook', 'Recommended'],
-      ['GED Ready Practice Test (official)', 'Official Platform', 'Essential'],
-      ['TI-30XS Multiview Calculator Guide', 'Free PDF', 'Recommended'],
-    ],
-  },
+/* ── GED Social Studies ── */
+'GED:social-studies':[
+  {q:'The US Constitution\'s First Amendment protects which of the following?',context:'Civics and Government — constitutional rights.',options:['A. The right to bear arms','B. Freedom of speech, religion, and the press','C. The right to a fair trial','D. Protection against unreasonable searches'],answer:1,tip:'First Amendment: freedom of religion, speech, press, assembly, and petition. Second Amendment = right to bear arms.',category:'GED Social Studies — Civics'},
+  {q:'Which branch of the US federal government is responsible for making laws?',context:'The three branches: Legislative, Executive, Judicial.',options:['A. Executive (the President)','B. Judicial (the Supreme Court)','C. Legislative (Congress)','D. Administrative (federal agencies)'],answer:2,tip:'Legislative = Congress (Senate + House of Representatives) makes laws. Executive enforces them. Judicial interprets them.',category:'GED Social Studies — Government'},
+  {q:'What is the primary purpose of a market economy?',context:'Economics — economic systems.',options:['A. To have the government control all production and prices','B. To allow supply and demand to determine prices and production','C. To ensure equal distribution of all goods and services','D. To prevent any foreign trade'],answer:1,tip:'Market economy = supply and demand set prices and production with minimal government control. Command economy = government controls all.',category:'GED Social Studies — Economics'},
+  {q:'The primary cause of the American Civil War (1861–1865) was:',context:'US History.',options:['A. Disagreement over taxation of imported goods only','B. The slavery debate, including its expansion into new territories','C. A border dispute with Mexico','D. Religious conflicts between Northern and Southern states'],answer:1,tip:'While multiple issues contributed, slavery — particularly its expansion into new territories — was the central and most divisive cause of the Civil War.',category:'GED Social Studies — US History'},
+  {q:'Which document begins with: "We hold these truths to be self-evident, that all men are created equal..."?',context:'Primary source identification.',options:['A. The US Constitution','B. The Bill of Rights','C. The Declaration of Independence','D. The Emancipation Proclamation'],answer:2,tip:'The Declaration of Independence (1776) contains this famous phrase, asserting natural rights as the basis for independence from Britain.',category:'GED Social Studies — Primary Sources'},
+  {q:'When supply of a product decreases and demand stays the same, what typically happens to the price?',context:'Economics — supply and demand.',options:['A. Price decreases','B. Price stays the same','C. Price increases','D. Demand increases automatically'],answer:2,tip:'Supply ↓ + Demand unchanged → Scarcity → Price ↑. This is basic supply-demand economics.',category:'GED Social Studies — Economics'},
+],
 
-  'GED:science': {
-    overview: [
-      'Life Science — ~40% of questions; cells, genetics, evolution, ecosystems',
-      'Physical Science — ~40% of questions; atoms, chemical reactions, forces, energy',
-      'Earth and Space Science — ~20% of questions; geological processes, weather, solar system',
-      '90 minutes; passing score 145; questions include data analysis, diagrams, and scenarios',
-    ],
-    questionTypes: [
-      ['Science Practices — Reading Graphs', 'Interpret data from charts, graphs, and experimental results', 'Medium', 'Read titles, axes, and legends first; answer questions from the data — do not use outside knowledge beyond basic science'],
-      ['Science Practices — Short Answer', 'Explain an experimental design, identify variables, or summarise conclusions', 'Hard', 'Name the independent and dependent variables explicitly; describe controls; use scientific vocabulary'],
-      ['Content Knowledge — Life Science', 'Answer questions about biological concepts from a stimulus (article or diagram)', 'Medium', 'Use context clues in the passage; genetics and evolution questions often test logical reasoning, not memorisation'],
-      ['Content Knowledge — Physical Science', 'Answer questions about chemistry and physics concepts', 'Medium', 'Learn the most testable concepts: atomic structure, chemical equations (reactants/products), Newton\'s laws, energy forms'],
-    ],
-    strategies: [
-      ['Stimulus-Based Practice', 'Daily', ['Practise reading a short science passage and answering questions without prior knowledge', 'GED Science is reading-comprehension-heavy; strong readers score well even without deep science background', 'Identify the main conclusion and evidence in each stimulus']],
-      ['Key Concepts Review', '3 times/week', ['Study the most tested topics: cell division, Punnett squares, photosynthesis/respiration, Newton\'s laws', 'Use visual aids: diagrams of the cell, periodic table, food web', 'Write brief summaries of each concept in your own words']],
-      ['Data Interpretation Drills', '3 times/week', ['Practice reading bar charts, line graphs, scatter plots, and data tables', 'Identify trends, anomalies, and what the data supports or contradicts', 'Practise writing one-sentence conclusions from data']],
-    ],
-    timeTips: [
-      ['Stimulus First', 'Read the attached passage or diagram before reading the question; context helps you locate answers faster.'],
-      ['85 Seconds Per Question', 'With 34 questions in 90 minutes, budget ~85 seconds each; long scenarios eat time quickly.'],
-      ['Short Answer Planning', 'Short-answer items: spend 1 minute outlining before writing; clear structure scores full marks.'],
-      ['Do Not Memorise Everything', 'GED Science is passage-based — almost all answers are in or directly inferable from the stimulus material.'],
-    ],
-    mistakes: [
-      ['Using personal science knowledge instead of the stimulus', 'Answers must come from the given text or diagram; outside knowledge can contradict the passage.'],
-      ['Leaving short-answer blank', 'Partial credit is possible; even an incomplete answer with correct elements scores better than nothing.'],
-      ['Confusing correlation with causation', 'GED Data questions frequently test whether students understand that a trend in a graph does not prove cause.'],
-      ['Skipping diagrams', 'Diagrams are often the key to answering the associated question correctly.'],
-    ],
-    resources: [
-      ['Khan Academy GED Science', 'Free Online', 'Essential'],
-      ['GED.com Official Science Study Guide', 'Official Website', 'Essential'],
-      ['CK-12 Life Science / Physical Science', 'Free Textbook', 'Recommended'],
-      ['GED Ready Science Practice Test', 'Official Platform', 'Essential'],
-      ['Kaplan GED Test Prep — Science', 'Textbook', 'Recommended'],
-    ],
-  },
+/* ── GED Language Arts ── */
+'GED:language-arts':[
+  {q:'Which sentence contains a run-on error?',context:'Grammar and mechanics — sentence structure.',options:['A. "She studied all night; consequently, she passed the exam."','B. "He was tired, so he went to bed early."','C. "The report was due Monday it was submitted on Friday."','D. "Although the weather was cold, they went for a walk."'],answer:2,tip:'Option C is a run-on: two independent clauses joined with no punctuation or conjunction. Fix: "…due Monday. It was submitted…" or add a semicolon.',category:'GED Language Arts — Grammar'},
+  {q:'In the poem excerpt: "The wind whispered secrets through the trees", the literary device used is:',context:'Literary analysis — figurative language.',options:['A. Simile','B. Metaphor','C. Personification','D. Hyperbole'],answer:2,tip:'Personification gives human qualities to non-human things. Wind cannot literally "whisper secrets" — this is a human action attributed to the wind.',category:'GED Language Arts — Literary Analysis'},
+  {q:'Which revision corrects the pronoun agreement error? "Each of the students must bring their textbook."',context:'Grammar — pronoun-antecedent agreement.',options:['A. No change — "their" is now accepted as a gender-neutral singular pronoun','B. "Each of the students must bring its textbook."','C. "Each of the students must bring our textbook."','D. "Each of the students must bring his or her textbook — or the sentence should be revised to \'Students must bring their textbooks.\'"'],answer:3,tip:'Traditionally, "each" is singular, requiring "his or her." Modern usage also accepts "their" for gender neutrality. Option D covers both the traditional fix and the cleaner plural revision.',category:'GED Language Arts — Grammar'},
+  {q:'A GED Extended Response requires you to write an argument based on two sources. Your essay should NOT include:',context:'Extended Response best practices.',options:['A. A clear claim stated in the introduction','B. Evidence quoted or paraphrased from the source documents','C. Your personal life experiences unrelated to the texts','D. A logically structured conclusion'],answer:2,tip:'GED Extended Response is evidence-based. Personal anecdotes not grounded in the texts are off-topic and will not earn marks.',category:'GED Language Arts — Extended Response'},
+  {q:'Which sentence uses a comma correctly?',context:'Punctuation — comma rules.',options:['A. "I went to the store, and bought milk."','B. "After the rain stopped, we went outside."','C. "She is, a talented, musician."','D. "He was tired, but, he continued working."'],answer:1,tip:'Introductory clauses/phrases are followed by a comma: "After the rain stopped," + main clause. Option A incorrectly splits a compound verb with a comma.',category:'GED Language Arts — Punctuation'},
+  {q:'The tone of the following sentence is best described as: "Despite their initial objections, the committee ultimately and reluctantly acquiesced to the proposal."',context:'',options:['A. Enthusiastic and celebratory','B. Formal and suggesting reluctant agreement','C. Casual and conversational','D. Angry and confrontational'],answer:1,tip:'"Ultimately and reluctantly acquiesced" suggests formal register + unwilling agreement — not enthusiasm.',category:'GED Language Arts — Tone & Style'},
+],
 
-  'GED:social-studies': {
-    overview: [
-      'Civics & Government — ~50% of questions; US Constitution, government structures, civic rights',
-      'US History — ~20% of questions; colonial era through modern events',
-      'Economics — ~15% of questions; supply/demand, government fiscal and monetary policy',
-      'Geography & World History — ~15% of questions; human-environment interaction, global events',
-    ],
-    questionTypes: [
-      ['Reading Primary Sources', 'Interpret excerpts from historical documents (Constitution, speeches, legislation)', 'Hard', 'Identify the author\'s purpose and historical context; answer only from the document, not general knowledge'],
-      ['Map and Chart Interpretation', 'Use geographic or statistical data to answer questions about social and economic patterns', 'Medium', 'Read the map key/legend and chart labels carefully; the question is usually answerable from the visual alone'],
-      ['Extended Response (if applicable)', 'Write a short evidence-based argument responding to two contrasting source documents', 'Hard', 'State a clear claim in the first sentence; use evidence from both documents; structure as claim-evidence-reasoning'],
-      ['Cause and Effect / Sequencing', 'Identify what caused a historical event or what followed as a consequence', 'Medium', 'Chronological vocabulary clues: "as a result", "led to", "following"; do not assume modern knowledge applies to historic contexts'],
-    ],
-    strategies: [
-      ['Document Practice', '3 times/week', ['Read excerpts from the Declaration of Independence, US Constitution, Federalist Papers', 'Practise summarising each document\'s main argument in 1–2 sentences', 'Answer 5 questions per document from official practice materials']],
-      ['Current Events Awareness', 'Weekly', ['Read articles about US government and economics to recognise concepts in context', 'Link economics concepts to real events: inflation, unemployment, federal budget', 'Watch documentary short-films on major US historical events']],
-      ['Mock Full Tests', 'Weekly', ['Complete a 70-minute Social Studies practice section', 'Focus on question types where you score below 70%', 'For extended response: practise writing a full response in 25 minutes']],
-    ],
-    timeTips: [
-      ['Read Source Documents Thoroughly', 'Primary source questions are only answerable from the document; spend 2–3 minutes reading it carefully.'],
-      ['Data Questions Are Quick', 'Map and chart questions should take under 60 seconds if you read the legend first.'],
-      ['Extended Response: Outline First', 'A 3-minute outline saves time and improves organisation for evidence-based writing.'],
-      ['History Sequence', 'For cause-effect questions, ask: what happened BEFORE (cause) and what happened AFTER (effect)?'],
-    ],
-    mistakes: [
-      ['Answering primary source questions from general knowledge', 'Stick to what the document says; outside historical knowledge may be inaccurate or irrelevant.'],
-      ['Ignoring the extended response', 'It is worth a significant portion of the score; a well-structured 3-paragraph response scores well even if not perfect.'],
-      ['Misreading map legends', 'Map questions are simple once you read the key — rushing past the legend is the most common error.'],
-      ['Treating all historical events as equally important', 'Focus study time on the most-tested periods: Constitutional founding, Civil War/Reconstruction, 20th-century civil rights.'],
-    ],
-    resources: [
-      ['Khan Academy GED Social Studies', 'Free Online', 'Essential'],
-      ['GED.com Official Social Studies Guide', 'Official Website', 'Essential'],
-      ['Crash Course US History (YouTube)', 'Free Video', 'Recommended'],
-      ['GED Ready Social Studies Practice Test', 'Official Platform', 'Essential'],
-      ['Kaplan GED Test Prep — Social Studies', 'Textbook', 'Recommended'],
-    ],
-  },
-
-  'GED:language-arts': {
-    overview: [
-      'Part 1 — Extended Response (45 min): write a 4–7 paragraph essay arguing a position based on two provided texts',
-      'Part 2 — Short break (no extra time provided between parts)',
-      'Part 3 — Reading Comprehension and Language (75 min): 40+ questions on reading, vocabulary, grammar, and editing',
-      'Reading texts include literary fiction, drama, nonfiction, and career/workplace documents',
-    ],
-    questionTypes: [
-      ['Extended Response', 'Write an evidence-based argument that analyses two source texts on a debatable issue', 'Hard', 'Clearly state your position in the introduction; use evidence from both texts; acknowledge and refute the opposing view'],
-      ['Reading Comprehension — Literary', 'Answer questions about plot, character, theme, and figurative language in fiction or drama', 'Medium', 'Identify the narrative voice and theme from recurring ideas; figurative language questions require you to interpret, not translate literally'],
-      ['Reading Comprehension — Informational', 'Answer questions about an author\'s argument, evidence, and structure in nonfiction', 'Medium', 'Ask: what is the author\'s claim? What evidence supports it? How is the text organised (compare/contrast, problem/solution)?'],
-      ['Editing / Language', 'Correct errors in grammar, punctuation, sentence structure, and usage', 'Medium', 'Read the full sentence before choosing; the correct option must be both grammatically correct and contextually natural'],
-    ],
-    strategies: [
-      ['Essay Writing Practice', 'Daily', ['Write one practice Extended Response in 45 minutes on a given prompt', 'Use a 3-part structure: intro (claim), 2 body paragraphs (evidence from each text), conclusion', 'Proofread specifically for punctuation, subject-verb agreement, and run-on sentences']],
-      ['Reading Variety', '3 times/week', ['Read literary fiction, biographical essays, and editorial opinion pieces', 'After reading, write 2–3 sentences summarising the author\'s purpose and main argument', 'Note vocabulary in context and look up unfamiliar words']],
-      ['Grammar Review', '3 times/week', ['Focus on the most-tested rules: comma usage, semicolons, run-ons, dangling modifiers, pronoun agreement', 'Practise editing paragraphs for errors', 'Read your edited sentence aloud — correct grammar sounds natural']],
-    ],
-    timeTips: [
-      ['45 Minutes for Essay', 'Invest the full Part 1 time in the extended response — planning 5 min, writing 35 min, reviewing 5 min.'],
-      ['Reading: Question-Guided', 'For Part 3 reading, scan the questions before reading the passage to know what information to locate.'],
-      ['Editing: Read Aloud Mentally', 'Grammar questions are easier when you hear the sentence in your head — the error often sounds wrong.'],
-      ['Do Not Leave Essay Blank', 'Even a 2-paragraph response with a clear claim and one piece of evidence scores partial marks.'],
-    ],
-    mistakes: [
-      ['Not taking a position in the Extended Response', 'The essay must argue a specific stance; a neutral summary of both sides scores poorly.'],
-      ['Ignoring text evidence', 'Unsupported opinions score low; every claim needs a reference to one of the two provided texts.'],
-      ['Run-on sentences in the essay', 'Join independent clauses with a semicolon or a coordinating conjunction (and, but, so) — not just a comma.'],
-      ['Spending too long on one reading passage', 'Budget roughly 4–5 minutes per passage in Part 3; move on even if some questions are uncertain.'],
-    ],
-    resources: [
-      ['Khan Academy GED Language Arts', 'Free Online', 'Essential'],
-      ['GED.com Official Language Arts Guide', 'Official Website', 'Essential'],
-      ['Purdue OWL Grammar Guide', 'Free Website', 'Recommended'],
-      ['GED Ready Language Arts Practice Test', 'Official Platform', 'Essential'],
-      ['Kaplan GED Test Prep — Language Arts', 'Textbook', 'Recommended'],
-    ],
-  },
 };
 
-/* ─── Icon paths ─────────────────────────────────────────────────────── */
-const iconPaths = {
-  headphones: '<path d="M3 14v-2a9 9 0 0 1 18 0v2"/><path d="M21 14a2 2 0 0 1-2 2h-1v-4h1a2 2 0 0 1 2 2Z"/><path d="M3 14a2 2 0 0 0 2 2h1v-4H5a2 2 0 0 0-2 2Z"/>',
-  target: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
-  book: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+/* ══════════════════════════════════════════════════════════════
+   TIPS per exam-section
+══════════════════════════════════════════════════════════════ */
+const TIPS = {
+  'IELTS:listening':  'Listen for signpost words: "however", "although", "the main point is". They signal key answers.',
+  'IELTS:reading':    'Scan for keywords from the question rather than reading every word of the passage.',
+  'IELTS:writing':    'Plan for 3 minutes before writing. A clear outline prevents going off-topic.',
+  'IELTS:speaking':   'Extend every answer with a reason or example. Aim for 2–3 sentences minimum.',
+  'TOEFL:reading':    'Map each paragraph\'s main purpose before answering. It speeds up evidence-based questions.',
+  'TOEFL:listening':  'Start note-taking from the first sentence — the topic is always introduced immediately.',
+  'TOEFL:speaking':   'Use a template: State → Reason → Example. Practice until it feels natural.',
+  'TOEFL:writing':    'In Integrated Writing, your job is to report the lecture — not share your opinion.',
+  'SAT:reading-writing': 'For transitions, identify the logical relationship (contrast, cause, addition) before choosing.',
+  'SAT:math':         'Plug in simple numbers (x = 2) to test abstract algebra questions quickly.',
+  'HSK:hsk-1-2':      'Learn words with pictures, not just translations. Connect sound → character → image.',
+  'HSK:hsk-3-4':      'Master 把 and 被 constructions — they appear in almost every HSK 3–4 test.',
+  'HSK:hsk-5-6':      'Read native Chinese news daily. Exposure to formal writing is essential at this level.',
+  'TOPIK:topik-i':    'Learn particles (이/가, 을/를, 은/는) before anything else — they are in every question.',
+  'TOPIK:listening':  'Korean audio plays once. Write a key word per sentence as you listen.',
+  'TOPIK:reading':    'For fill-in-blank: identify the logical relationship (cause, contrast, addition) first.',
+  'TOPIK:writing':    'Question 54 essays must use formal -ㅂ니다 / -습니다 endings throughout.',
+  'GED:math':         'Re-read the question after solving. Make sure you answered what was actually asked.',
+  'GED:science':      'Almost all answers come from the stimulus text — do not rely on outside science knowledge.',
+  'GED:social-studies': 'For primary source questions, answer only from the document, not general history knowledge.',
+  'GED:language-arts': 'Read your grammar corrections aloud mentally — errors usually sound wrong when spoken.',
 };
 
-/* ─── Helpers ────────────────────────────────────────────────────────── */
-function svg(path) {
-  return `<svg viewBox="0 0 24 24" aria-hidden="true">${path}</svg>`;
-}
+/* ══════════════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════════════ */
+let state = {
+  examKey: 'IELTS',
+  slug: 'listening',
+  questions: [],
+  current: 0,
+  selected: null,       // index of chosen option
+  answered: [],         // null|'correct'|'wrong' per question
+  choices: [],          // selected option index per question
+  submitted: false,
+  timerSec: 0,
+  timerInterval: null,
+  started: false,
+};
 
-function slugify(value) {
-  return String(value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-}
-
-function getContext() {
+/* ══════════════════════════════════════════════════════════════
+   BOOT
+══════════════════════════════════════════════════════════════ */
+function boot() {
   const params = new URLSearchParams(window.location.search);
-  const examKey = (params.get('exam') || 'IELTS').toUpperCase();
-  const exam = exams[examKey] || exams.IELTS;
-  const sectionParam = params.get('section') || '';
-  const matchedSlug = exam.slugs.find((s) => s === sectionParam.toLowerCase()) || exam.slugs[0];
-  const sectionIndex = exam.slugs.indexOf(matchedSlug);
-  const sectionName = exam.sections[sectionIndex] || exam.sections[0];
-  return { examKey: exams[examKey] ? examKey : 'IELTS', exam, slug: matchedSlug, sectionName };
+  const key = (params.get('exam') || 'IELTS').toUpperCase();
+  state.examKey = EXAMS[key] ? key : 'IELTS';
+  const exam = EXAMS[state.examKey];
+  const slugParam = params.get('section') || '';
+  state.slug = exam.slugs.includes(slugParam) ? slugParam : exam.slugs[0];
+
+  const qs = QB[`${state.examKey}:${state.slug}`] || [];
+  state.questions = qs;
+  state.answered = new Array(qs.length).fill(null);
+  state.choices  = new Array(qs.length).fill(null);
+  state.timerSec = exam.durations[state.slug] || 1800;
+
+  const sectionName = exam.sections[exam.slugs.indexOf(state.slug)];
+  document.title = `${exam.display} ${sectionName} Practice Test — Дараагийн Алхам`;
+  document.getElementById('heroEyebrow').textContent = `${exam.display} Practice Test`;
+  document.getElementById('heroTitle').textContent = `${exam.display} — ${sectionName}`;
+  document.getElementById('timerDisplay').textContent = fmtTime(state.timerSec);
+
+  renderTabs();
+  renderDots();
+  renderQuestion();
 }
 
-function getData(examKey, slug) {
-  const key = `${examKey}:${slug}`;
-  if (sectionData[key]) return sectionData[key];
-
-  /* Fallback — generate generic content from exam metadata */
-  return {
-    overview: exams[examKey].sections.map((s, i) =>
-      `${s} — Practice set ${i + 1}: Covers all ${s} formats and question types for ${examKey}`),
-    questionTypes: [
-      ['Multiple Choice', 'Select the best answer from the provided options', 'Medium', 'Read all options before choosing; eliminate clearly wrong answers first'],
-      ['Short Answer', 'Write a brief answer using information from the source material', 'Medium', 'Be concise and specific; use the exact wording from the source where required'],
-      ['Extended Response', 'Write a longer response demonstrating comprehension and analysis', 'Hard', 'Plan your response before writing; structure with clear opening, body, and conclusion'],
-    ],
-    strategies: [
-      ['Regular Practice', '30–60 min/day', ['Use official practice materials from the exam provider', 'Review every incorrect answer immediately after practice', 'Track which question types cause the most errors']],
-      ['Study Vocabulary', '4 times/week', ['Learn the most common vocabulary for this exam section', 'Use flashcards with example sentences', 'Review and test yourself every three days']],
-      ['Mock Tests', 'Weekly', ['Simulate real exam conditions — timed and without breaks', 'Score yourself honestly and note areas for improvement', 'Re-sit topics where you score below 70%']],
-    ],
-    timeTips: [
-      ['Manage Your Time', 'Divide available time evenly across questions; do not spend more than 2 minutes on any single item initially.'],
-      ['Read Carefully', 'Read each question twice before answering to avoid misunderstanding what is being asked.'],
-      ['Skip and Return', 'Mark difficult questions and return to them after completing the easier ones.'],
-      ['Check Your Work', 'If time allows, review answers — especially ones you were unsure about.'],
-    ],
-    mistakes: [
-      ['Rushing through questions', 'Careless errors are the most preventable; slow down and read carefully.'],
-      ['Ignoring instructions', 'Follow word limits, format requirements, and any special instructions in each question.'],
-      ['Not practising under timed conditions', 'Exam timing is pressured; always practise with a timer running.'],
-      ['Skipping review of wrong answers', 'Every wrong answer is a learning opportunity; find out why it was wrong before your next practice session.'],
-    ],
-    resources: [
-      [`Official ${examKey} Practice Materials`, 'Official Website', 'Essential'],
-      [`${examKey} Study Guide`, 'Textbook', 'Recommended'],
-      ['Khan Academy', 'Free Online', 'Supplementary'],
-      ['YouTube Study Channels', 'Free Video', 'Supplementary'],
-    ],
-  };
+/* ══════════════════════════════════════════════════════════════
+   TIMER
+══════════════════════════════════════════════════════════════ */
+function fmtTime(sec) {
+  const m = Math.floor(sec / 60).toString().padStart(2, '0');
+  const s = (sec % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
 }
 
-/* ─── Render functions ───────────────────────────────────────────────── */
-function metaIcon(type) {
-  if (type === 'clock') return svg('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>');
-  if (type === 'target') return svg('<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/>');
-  return svg('<path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>');
-}
+document.getElementById('timerStartBtn').addEventListener('click', function () {
+  if (state.started) return;
+  state.started = true;
+  this.textContent = 'RUNNING…';
+  this.disabled = true;
+  state.timerInterval = setInterval(() => {
+    state.timerSec--;
+    const el = document.getElementById('timerDisplay');
+    el.textContent = fmtTime(state.timerSec);
+    el.className = state.timerSec < 300 ? 'danger' : state.timerSec < 600 ? 'warn' : '';
+    if (state.timerSec <= 0) {
+      clearInterval(state.timerInterval);
+      el.textContent = '00:00';
+      showResults();
+    }
+  }, 1000);
+});
 
-function renderSectionTabs(examKey, exam, currentSlug) {
-  const tabs = exam.sections.map((name, i) => {
-    const slug = exam.slugs[i];
-    const isActive = slug === currentSlug;
-    return `<a href="test.html?exam=${encodeURIComponent(examKey)}&section=${encodeURIComponent(slug)}"
-      class="${isActive ? 'active' : ''}"
-      aria-current="${isActive ? 'page' : 'false'}">${name}</a>`;
+/* ══════════════════════════════════════════════════════════════
+   SECTION TABS
+══════════════════════════════════════════════════════════════ */
+function renderTabs() {
+  const exam = EXAMS[state.examKey];
+  document.getElementById('sectionTabs').innerHTML = exam.sections.map((name, i) => {
+    const s = exam.slugs[i];
+    const active = s === state.slug ? ' active' : '';
+    return `<a href="test.html?exam=${state.examKey}&section=${s}" class="${active}">${name}</a>`;
   }).join('');
-  document.getElementById('sectionTabs').innerHTML = tabs;
 }
 
-function render() {
-  const { examKey, exam, slug, sectionName } = getContext();
-  const data = getData(examKey, slug);
-  const duration = exam.duration[slug] || Object.values(exam.duration)[0];
-  const questions = exam.questions[slug] || Object.values(exam.questions)[0];
-
-  document.title = `${exam.display} ${sectionName} Preparation — Дараагийн Алхам`;
-  document.getElementById('heroIcon').innerHTML = svg(iconPaths[exam.icon] || iconPaths.book);
-  document.getElementById('prepTitle').textContent = `${exam.display} — ${sectionName}`;
-  document.getElementById('prepSubtitle').textContent =
-    `Master the ${exam.display} ${sectionName} section with comprehensive strategies, practice techniques, and expert guidance.`;
-  document.getElementById('prepMeta').innerHTML = [
-    ['clock', duration],
-    ['target', questions],
-    ['chart', exam.score],
-  ].map(([type, text]) => `<span>${metaIcon(type)} ${text}</span>`).join('');
-
-  renderSectionTabs(examKey, exam, slug);
-
-  /* Progress */
-  const scoreMap = { IELTS: '6.5', TOEFL: '88', SAT: '1320', HSK: '210', TOPIK: '78', GED: '152' };
-  document.getElementById('progressGrid').innerHTML = [
-    ['Current Score', scoreMap[examKey] || '—', `Target: ${exam.target}`, '55%'],
-    ['Practice Hours', '35', '', '62%'],
-    ['Mock Tests', '4/10', '', '40%'],
-    ['Mastery', '60%', '', '60%'],
-  ].map(([label, value, sub, width]) => `
-    <article class="progress-card">
-      <span>${label}</span>
-      <strong>${value}</strong>
-      ${sub ? `<small>${sub}</small>` : `<div class="meter"><i style="width:${width}"></i></div>`}
-    </article>`).join('');
-
-  /* Recommendation */
-  document.getElementById('recommendIntro').textContent =
-    `Based on your progress, we recommend focusing on ${sectionName}:`;
-  document.getElementById('recommendList').innerHTML = (data.questionTypes.slice(0, 3)).map(
-    ([title]) => `<li><strong>${title}</strong> — Practise 5–10 questions daily and review every error.</li>`
-  ).join('');
-
-  /* Overview */
-  document.getElementById('overviewGrid').innerHTML = data.overview.map((item, i) => `
-    <article class="overview-card">
-      <h3>Part ${i + 1}</h3>
-      <p>${item}</p>
-    </article>`).join('');
-
-  /* Question types */
-  document.getElementById('questionTypes').innerHTML = data.questionTypes.map(([title, desc, level, strategy]) => `
-    <article class="question-card">
-      <div class="card-row">
-        <h3>${title}</h3>
-        <span class="badge ${level.toLowerCase()}">${level}</span>
-      </div>
-      <p>${desc}</p>
-      <div class="strategy-note">${svg('<path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.75V17h8v-2.25A7 7 0 0 0 12 2z"/>')} <strong>Strategy:</strong> ${strategy}</div>
-    </article>`).join('');
-
-  /* Strategies */
-  document.getElementById('strategyGrid').innerHTML = data.strategies.map(([title, cadence, items]) => `
-    <article class="strategy-card">
-      <h3>${title}</h3>
-      <small>${svg('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>')} ${cadence}</small>
-      <ol>${items.map((item) => `<li>${item}</li>`).join('')}</ol>
-    </article>`).join('');
-
-  /* Time tips */
-  document.getElementById('timeTips').innerHTML = data.timeTips.map(([title, text], i) => `
-    <article class="time-tip">
-      <span>${i + 1}</span>
-      <div><h3>${title}</h3><p>${text}</p></div>
-    </article>`).join('');
-
-  /* Mistakes */
-  document.getElementById('mistakeList').innerHTML = data.mistakes.map(([title, fix]) => `
-    <article class="mistake-card">
-      <span class="mistake-icon">${svg('<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>')}</span>
-      <div>
-        <h3>✗ ${title}</h3>
-        <p>${svg('<path d="M20 6 9 17l-5-5"/>')} <strong>Fix:</strong> ${fix}</p>
-      </div>
-    </article>`).join('');
-
-  /* Resources */
-  document.getElementById('resourceList').innerHTML = data.resources.map(([title, type, badge]) => `
-    <a class="resource-row" href="exam-info.html">
-      <span><strong>${title}</strong><small>${type}</small></span>
-      <em class="${badge.toLowerCase()}">${badge}</em>
-    </a>`).join('');
+/* ══════════════════════════════════════════════════════════════
+   DOT NAVIGATOR
+══════════════════════════════════════════════════════════════ */
+function renderDots() {
+  document.getElementById('dotNav').innerHTML = state.questions.map((_, i) => {
+    let cls = i === state.current ? 'current' : '';
+    if (state.answered[i] === 'correct') cls = 'q-correct';
+    if (state.answered[i] === 'wrong')   cls = 'q-wrong';
+    else if (state.choices[i] !== null && !cls) cls = 'answered';
+    return `<button class="${cls}" onclick="jumpTo(${i})">${i + 1}</button>`;
+  }).join('');
 }
 
-render();
+function jumpTo(index) {
+  state.current = index;
+  state.selected = state.choices[index];
+  state.submitted = state.answered[index] !== null;
+  renderQuestion();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RENDER QUESTION
+══════════════════════════════════════════════════════════════ */
+function renderQuestion() {
+  const qs = state.questions;
+  if (!qs.length) {
+    document.getElementById('questionPanel').innerHTML = '<p style="padding:24px;color:#6B7280">No questions available for this section.</p>';
+    return;
+  }
+
+  const q = qs[state.current];
+  const total = qs.length;
+  const done  = state.answered.filter(Boolean).length;
+
+  // progress
+  document.getElementById('progressFill').style.width = `${(done / total) * 100}%`;
+  document.getElementById('progressLabel').textContent = `Question ${state.current + 1} of ${total}`;
+  document.getElementById('questionBadge').textContent = `Q${state.current + 1}`;
+  document.getElementById('questionCategory').textContent = q.category || '';
+  document.getElementById('questionText').textContent = q.q;
+
+  // context
+  const ctxBox = document.getElementById('contextBox');
+  if (q.context) {
+    ctxBox.innerHTML = `<div class="context-box"><strong>Context / Passage Extract</strong>${q.context}</div>`;
+  } else {
+    ctxBox.innerHTML = '';
+  }
+
+  // tip
+  document.getElementById('tipText').textContent =
+    TIPS[`${state.examKey}:${state.slug}`] || q.tip || 'Read every option carefully before choosing.';
+
+  // options
+  const letters = ['A','B','C','D','E'];
+  document.getElementById('optionsGrid').innerHTML = q.options.map((opt, i) => {
+    let cls = 'option-btn';
+    if (state.submitted) {
+      if (i === q.answer) cls += ' correct';
+      else if (i === state.selected && i !== q.answer) cls += ' wrong';
+    } else if (i === state.selected) {
+      cls += ' selected';
+    }
+    const disabled = state.submitted ? 'disabled' : '';
+    return `<button class="${cls}" ${disabled} onclick="selectOption(${i})">
+      <span class="option-letter">${letters[i]}</span>${opt.replace(/^[A-E]\.\s*/,'')}
+    </button>`;
+  }).join('');
+
+  // feedback
+  const fb = document.getElementById('feedbackBox');
+  if (state.submitted) {
+    const correct = state.selected === q.answer;
+    fb.innerHTML = `<div class="feedback-box ${correct ? 'correct' : 'wrong'}">
+      ${correct ? '✓ Correct!' : `✗ Incorrect. The correct answer was: <strong>${q.options[q.answer]}</strong>`}
+      <br><br><em>${q.tip}</em>
+    </div>`;
+  } else {
+    fb.innerHTML = '';
+  }
+
+  // buttons
+  document.getElementById('prevBtn').disabled = state.current === 0;
+  document.getElementById('nextBtn').disabled = state.current === total - 1;
+  document.getElementById('submitBtn').disabled = state.selected === null || state.submitted;
+  document.getElementById('submitBtn').textContent = state.submitted ? 'Answered' : 'Check Answer';
+
+  renderDots();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   INTERACTIONS
+══════════════════════════════════════════════════════════════ */
+function selectOption(i) {
+  if (state.submitted) return;
+  state.selected = i;
+  state.choices[state.current] = i;
+  renderQuestion();
+}
+
+document.getElementById('submitBtn').addEventListener('click', () => {
+  if (state.selected === null || state.submitted) return;
+  const q = state.questions[state.current];
+  state.submitted = true;
+  state.answered[state.current] = state.selected === q.answer ? 'correct' : 'wrong';
+  renderQuestion();
+
+  // auto-advance if all answered
+  const allAnswered = state.answered.every(a => a !== null);
+  if (allAnswered) {
+    setTimeout(showResults, 800);
+  }
+});
+
+document.getElementById('prevBtn').addEventListener('click', () => {
+  if (state.current > 0) {
+    state.current--;
+    state.selected = state.choices[state.current];
+    state.submitted = state.answered[state.current] !== null;
+    renderQuestion();
+  }
+});
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+  if (state.current < state.questions.length - 1) {
+    state.current++;
+    state.selected = state.choices[state.current];
+    state.submitted = state.answered[state.current] !== null;
+    renderQuestion();
+  }
+});
+
+/* ══════════════════════════════════════════════════════════════
+   RESULTS
+══════════════════════════════════════════════════════════════ */
+function showResults() {
+  if (state.timerInterval) clearInterval(state.timerInterval);
+  const correct = state.answered.filter(a => a === 'correct').length;
+  const total   = state.questions.length;
+  const pct     = Math.round((correct / total) * 100);
+
+  document.getElementById('resultsScore').textContent = `${correct}/${total}`;
+  document.getElementById('resultsMsg').textContent =
+    pct >= 80 ? `Excellent work! ${pct}% — you\'re well prepared for this section.` :
+    pct >= 60 ? `Good effort! ${pct}% — review the questions you missed and try again.` :
+    `Keep practising! ${pct}% — focus on the highlighted errors and retry.`;
+
+  document.getElementById('resultsPanel').classList.add('visible');
+  document.getElementById('resultsPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+document.getElementById('retryBtn').addEventListener('click', () => {
+  if (state.timerInterval) clearInterval(state.timerInterval);
+  window.location.reload();
+});
+
+document.getElementById('reviewBtn').addEventListener('click', () => {
+  const list = document.getElementById('reviewList');
+  list.style.display = list.style.display === 'none' ? 'grid' : 'none';
+  if (list.style.display === 'grid') {
+    list.innerHTML = state.questions.map((q, i) => {
+      const status = state.answered[i];
+      const chosen = state.choices[i];
+      const cls = status === 'correct' ? 'r-correct' : status === 'wrong' ? 'r-wrong' : '';
+      const icon = status === 'correct' ? '✓' : status === 'wrong' ? '✗' : '—';
+      return `<div class="review-item ${cls}">
+        <div class="ri-q">${icon} Q${i+1}: ${q.q}</div>
+        <div class="ri-a">Your answer: ${chosen !== null ? q.options[chosen] : 'Not answered'}
+        ${status === 'wrong' ? `<br><span class="ri-correct">Correct: ${q.options[q.answer]}</span>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+});
+
+/* ── Start ── */
+boot();
 </script>
 </body>
 </html>
